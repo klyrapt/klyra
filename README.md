@@ -46,14 +46,11 @@ klyra/
 
 ---
 
-## 🧰 Tecnologias Utilizadas
+## 🛠️ Tecnologias Utilizadas
 
-- **Back-end:** Django REST Framework, JWT, MySQL
-- **Front-end:** Next.js, Tailwind CSS, ShadCN
-- **Banco de Dados:** MySQL / PostgreSQL
-- **Real-time:** Django Channels (WebSockets)
-- **Armazenamento:** Cloudinary / S3 (futuramente)
-- **Deploy:** Docker, Railway, Vercel (dependendo do projeto)
+A Klyra adota uma abordagem flexível na escolha de tecnologias para cada projeto. As stacks utilizadas são cuidadosamente definidas com base nas necessidades específicas de cada sistema, considerando escalabilidade, desempenho e usabilidade.
+
+Cada projeto pode utilizar diferentes linguagens, frameworks e ferramentas — por isso, **recomendamos que você consulte o `README.md` e a documentação interna de cada pasta dentro de `projetos/` para entender quais tecnologias estão sendo utilizadas e como colaborar com aquele produto em particular.**
 
 ---
 
@@ -62,8 +59,8 @@ klyra/
 Todos os projetos são organizados dentro da pasta `projetos/`.
 Para colaborar com um projeto específico:
 
-1. Vá até a pasta do projeto desejado (ex: `projetos/marketplace/`)
-2. Leia o `README.md` e `roadmap.md` interno (se houver)
+1. Acesse a pasta do projeto desejado (ex: `projetos/marketplace/`)
+2. Leia o `README.md` e os arquivos de documentação interna
 3. Crie uma branch: `git checkout -b nome-da-feature`
 4. Faça suas alterações com boas práticas de commit
 5. Envie seu código: `git push origin nome-da-feature`
@@ -84,7 +81,7 @@ Este repositório é licenciado sob a **Licença MIT**. Consulte o arquivo [`LIC
 ## 📬 Contato Oficial
 
 **Fundador:** Mamadu Sama  
-**E-mail:** contato@klyra.com *(mamadusama19@gmail.com)*  
+**E-mail:** [endereço de email](contato@klyra.pt)
 **GitHub:** [github.com/klyrapt](https://github.com/klyrapt)
 
 ---
