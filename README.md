@@ -81,7 +81,7 @@ Este repositório é licenciado sob a **Licença MIT**. Consulte o arquivo [`LIC
 ## 📬 Contato Oficial
 
 **Fundador:** Mamadu Sama  
-**E-mail:** [endereço de email](contato@klyra.pt)
+**E-mail:** [endereço de email](contato@klyra.pt) <br>
 **GitHub:** [github.com/klyrapt](https://github.com/klyrapt)
 
 ---
