@@ -1,0 +1,3 @@
+# 📁 Estrutura do Repositório
+
+Explicação de como o repositório está organizado...
