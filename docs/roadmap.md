@@ -1,0 +1,3 @@
+# 🗺️ Roadmap da Klyra
+
+Planejamento dos próximos passos e projetos...
