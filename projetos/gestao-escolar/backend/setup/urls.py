@@ -26,6 +26,7 @@ urlpatterns = [
     path("api/", include("aula.urls")),
     path("api/", include("aluno.urls")),
     path("api/", include("responsavel.urls")),
+    path("api/", include("turma.urls")),
     path('api/planos/', include('planos.urls')),
 
     path("api/auth/", include("auntenticacao.urls")),
