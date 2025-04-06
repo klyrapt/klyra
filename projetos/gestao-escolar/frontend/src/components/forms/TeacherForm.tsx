@@ -116,78 +116,80 @@ const TeacherForm = ({
   };
 
   return (
-    <form className="flex flex-col gap-8" onSubmit={handleSubmit(onSubmit)}>
-      <h1 className="text-xl font-semibold">{type === "create" ? "Criar Professor" : "Atualizar Professor"}</h1>
+    <div className="max-h-[80vh] overflow-y-auto pr-2">
+      <form className="flex flex-col gap-8" onSubmit={handleSubmit(onSubmit)}>
+        <h1 className="text-xl font-semibold">{type === "create" ? "Criar Professor" : "Atualizar Professor"}</h1>
 
-      <div className="flex justify-between flex-wrap gap-4">
-        <InputField label="Nome Completo" name="nome" register={register} error={errors.nome} />
-        <InputField label="Email" name="email" register={register} error={errors.email} />
-        <InputField label="Formação" name="formacao" register={register} error={errors.formacao} />
-        <InputField label="Especialização" name="especializacao" register={register} error={errors.especializacao} />
-        <InputField label="Biografia" name="biografia" register={register} error={errors.biografia} />
-        <InputField label="Telefone" name="telefone" register={register} error={errors.telefone} />
-        <InputField label="Data de Nascimento" name="data_nascimento" type="date" register={register} error={errors.data_nascimento} />
-        <InputField label="Nacionalidade" name="nacionalidade" register={register} error={errors.nacionalidade} />
-        <InputField label="Naturalidade" name="naturalidade" register={register} error={errors.naturalidade} />
-        <InputField label="Endereço" name="endereco_completo" register={register} error={errors.endereco_completo} />
-        <InputField label="Bairro" name="bairro" register={register} error={errors.bairro} />
-        <InputField label="Cidade" name="cidade" register={register} error={errors.cidade} />
-        <InputField label="Código Postal" name="codigo_postal" register={register} error={errors.codigo_postal} />
-        <InputField label="Data de Admissão" name="data_admissao" type="date" register={register} error={errors.data_admissao} />
+        <div className="flex justify-between flex-wrap gap-4">
+          <InputField label="Nome Completo" name="nome" register={register} error={errors.nome} />
+          <InputField label="Email" name="email" register={register} error={errors.email} />
+          <InputField label="Formação" name="formacao" register={register} error={errors.formacao} />
+          <InputField label="Especialização" name="especializacao" register={register} error={errors.especializacao} />
+          <InputField label="Biografia" name="biografia" register={register} error={errors.biografia} />
+          <InputField label="Telefone" name="telefone" register={register} error={errors.telefone} />
+          <InputField label="Data de Nascimento" name="data_nascimento" type="date" register={register} error={errors.data_nascimento} />
+          <InputField label="Nacionalidade" name="nacionalidade" register={register} error={errors.nacionalidade} />
+          <InputField label="Naturalidade" name="naturalidade" register={register} error={errors.naturalidade} />
+          <InputField label="Endereço" name="endereco_completo" register={register} error={errors.endereco_completo} />
+          <InputField label="Bairro" name="bairro" register={register} error={errors.bairro} />
+          <InputField label="Cidade" name="cidade" register={register} error={errors.cidade} />
+          <InputField label="Código Postal" name="codigo_postal" register={register} error={errors.codigo_postal} />
+          <InputField label="Data de Admissão" name="data_admissao" type="date" register={register} error={errors.data_admissao} />
 
-        {/* Gênero */}
-        <div className="flex flex-col gap-2 w-full md:w-1/4">
-          <label className="text-xs text-gray-500">Gênero</label>
-          <select {...register("genero")} className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full">
-            <option value="">Selecione</option>
-            <option value="M">Masculino</option>
-            <option value="F">Feminino</option>
-            <option value="O">Outro</option>
-          </select>
+          {/* Gênero */}
+          <div className="flex flex-col gap-2 w-full md:w-1/4">
+            <label className="text-xs text-gray-500">Gênero</label>
+            <select {...register("genero")} className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full">
+              <option value="">Selecione</option>
+              <option value="M">Masculino</option>
+              <option value="F">Feminino</option>
+              <option value="O">Outro</option>
+            </select>
+          </div>
+
+          {/* Regime de trabalho */}
+          <div className="flex flex-col gap-2 w-full md:w-1/4">
+            <label className="text-xs text-gray-500">Regime de Trabalho</label>
+            <select {...register("regime_trabalho")} className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full">
+              <option value="">Selecione</option>
+              <option value="integral">Integral</option>
+              <option value="parcial">Parcial</option>
+              <option value="horista">Horista</option>
+            </select>
+          </div>
+
+          {/* Upload de foto */}
+          <div className="flex flex-col gap-2 w-full md:w-1/4 justify-center">
+            <label htmlFor="foto" className="text-xs text-gray-500 flex gap-2 cursor-pointer">
+              <Image src="/upload.png" alt="upload" width={24} height={24} /> Foto
+            </label>
+            <input
+              type="file"
+              id="foto"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0] || null;
+                setFotoFile(file);
+                if (file) {
+                  const url = URL.createObjectURL(file);
+                  setPreviewUrl(url);
+                }
+              }}
+            />
+            {previewUrl && (
+              <Image src={previewUrl} alt="Preview" width={80} height={80} className="rounded-md mt-2 object-cover" />
+            )}
+          </div>
         </div>
 
-        {/* Regime de trabalho */}
-        <div className="flex flex-col gap-2 w-full md:w-1/4">
-          <label className="text-xs text-gray-500">Regime de Trabalho</label>
-          <select {...register("regime_trabalho")} className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full">
-            <option value="">Selecione</option>
-            <option value="integral">Integral</option>
-            <option value="parcial">Parcial</option>
-            <option value="horista">Horista</option>
-          </select>
-        </div>
+        {/* Popup de sucesso/erro */}
+        {statusMsg && <DeletePopup type={statusMsg.type} message={statusMsg.msg} />}
 
-        {/* Upload de foto */}
-        <div className="flex flex-col gap-2 w-full md:w-1/4 justify-center">
-          <label htmlFor="foto" className="text-xs text-gray-500 flex gap-2 cursor-pointer">
-            <Image src="/upload.png" alt="upload" width={24} height={24} /> Foto
-          </label>
-          <input
-            type="file"
-            id="foto"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0] || null;
-              setFotoFile(file);
-              if (file) {
-                const url = URL.createObjectURL(file);
-                setPreviewUrl(url);
-              }
-            }}
-          />
-          {previewUrl && (
-            <Image src={previewUrl} alt="Preview" width={80} height={80} className="rounded-md mt-2 object-cover" />
-          )}
-        </div>
-      </div>
-
-      {/* Popup de sucesso/erro */}
-      {statusMsg && <DeletePopup type={statusMsg.type} message={statusMsg.msg} />}
-
-      <button type="submit" className="bg-blue-500 text-white p-2 rounded-md">
-        {type === "create" ? "Criar" : "Atualizar"}
-      </button>
-    </form>
+        <button type="submit" className="bg-blue-500 text-white p-2 rounded-md">
+          {type === "create" ? "Criar" : "Atualizar"}
+        </button>
+      </form>
+    </div>
   );
 };
 
