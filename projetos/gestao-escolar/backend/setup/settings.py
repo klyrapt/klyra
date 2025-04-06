@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 from decouple import Csv, config
 from datetime import timedelta
+import os
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -59,6 +60,7 @@ LOCAL_APPS = [
     "matricula.apps.MatriculaConfig",
     "sala.apps.SalaConfig",
     "responsavel.apps.ResponsavelConfig",
+    "ensino.apps.EnsinoConfig",
 ]
 
 THIRD_PARTY_APPS=[
@@ -165,8 +167,20 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+
+
+
+
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
+
+
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

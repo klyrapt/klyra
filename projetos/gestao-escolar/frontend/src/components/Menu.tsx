@@ -16,7 +16,7 @@ const menuItems = [
       { icon: "/student.png", label: "Alunos", href: "/list/students", visible: ["admin", "teacher"] },
       { icon: "/parent.png", label: "Pais", href: "/list/parents", visible: ["admin", "teacher"] },
       { icon: "/subject.png", label: "Disciplinas", href: "/list/subjects", visible: ["admin"] },
-      { icon: "/class.png", label: "Turmas", href: "/list/classes", visible: ["admin", "teacher"] },
+      { icon: "/class.png", label: "Turmas", href: "/list/turmas", visible: ["admin", "teacher"] },
       { icon: "/lesson.png", label: "Aulas", href: "/list/lessons", visible: ["admin", "teacher"] },
       { icon: "/exam.png", label: "Provas", href: "/list/exams", visible: ["admin", "teacher", "student", "parent"] },
       { icon: "/assignment.png", label: "Tarefas", href: "/list/assignments", visible: ["admin", "teacher", "student", "parent"] },

@@ -1,10 +1,14 @@
 # views.py
+
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 
+from django.db import IntegrityError
 
 from .models import Disciplina
 from .serializers import DisciplinaSerializer, DisciplinaCreateSerializer
+
+
 
 
 class DisciplinaListCreateView(generics.ListCreateAPIView):
@@ -22,15 +26,12 @@ class DisciplinaListCreateView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         user = self.request.user
         instituicao = user.instituicao_admin.first()
+
+        # Verifica se disciplina já existe
+        nome = self.request.data.get("nome")
+        disciplina_existente = Disciplina.objects.filter(nome=nome, instituicao=instituicao).first()
+
+        if disciplina_existente:
+            raise IntegrityError("Disciplina já existe para esta instituição.")
+
         serializer.save(instituicao=instituicao)
-    
-
-
-class DisciplinaDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Disciplina.objects.all()
-    serializer_class = DisciplinaSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        # Garante que só acesse disciplinas da instituição do usuário logado
-        return self.queryset.filter(instituicao__admin=self.request.user)

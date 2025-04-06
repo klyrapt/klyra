@@ -9,7 +9,24 @@ class Turma(models.Model):
     ano_letivo = models.PositiveIntegerField()
     nivel = models.ForeignKey(Nivel, on_delete=models.CASCADE, related_name="turmas")
     instituicao = models.ForeignKey(Instituicao, on_delete=models.CASCADE, related_name="turmas")
-    professores = models.ManyToManyField(Professor, blank=True)
+    capacidade = models.PositiveIntegerField(null=True, blank=True, help_text="Número máximo de alunos permitidos na turma")
+    diretor_turma = models.ForeignKey(
+    Professor,
+    on_delete=models.SET_NULL,
+    null=True,
+    blank=True,
+    related_name="turmas_diretor",
+    help_text="Professor responsável como diretor da turma"
+)
+
+
+
+
+    
+    
+    class Meta:
+        unique_together = ("nome", "ano_letivo", "instituicao")  # ← isso garante unicidade
+        ordering = ["ano_letivo", "nome"]
 
     def __str__(self):
         return f"{self.nome} - {self.ano_letivo}"

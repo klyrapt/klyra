@@ -1,9 +1,13 @@
+"use client";
+
+
 import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import { eventsData, role } from "@/lib/data";
 import Image from "next/image";
+import { withAuth } from "@/lib/withAuth";
 
 type Event = {
   id: number;
@@ -94,4 +98,4 @@ const EventListPage = () => {
   );
 };
 
-export default EventListPage;
+export default  withAuth(EventListPage);

@@ -5,7 +5,6 @@ from django.db import models
 from escola.models import Instituicao
 
 
-
 class Disciplina(models.Model):
     nome = models.CharField(max_length=100)
     descricao = models.TextField(blank=True, null=True)
@@ -23,10 +22,6 @@ class Disciplina(models.Model):
     def __str__(self):
         return self.nome
 
-
- 
-
     class Meta:
         unique_together = ('nome', 'instituicao')
-
 

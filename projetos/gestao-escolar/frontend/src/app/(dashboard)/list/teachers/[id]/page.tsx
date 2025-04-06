@@ -1,3 +1,7 @@
+"use client";
+
+
+
 import Announcements from "@/components/Announcements";
 import BigCalendar from "@/components/BigCalender";
 import FormModal from "@/components/FormModal";
@@ -5,6 +9,8 @@ import Performance from "@/components/Performance";
 import { role } from "@/lib/data";
 import Image from "next/image";
 import Link from "next/link";
+import { withAuth } from "@/lib/withAuth";
+
 
 const SingleTeacherPage = () => {
   return (
@@ -164,4 +170,4 @@ const SingleTeacherPage = () => {
   );
 };
 
-export default SingleTeacherPage;
+export default withAuth(SingleTeacherPage);

@@ -1,3 +1,6 @@
+"use client";
+
+
 import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
@@ -5,6 +8,8 @@ import TableSearch from "@/components/TableSearch";
 import { role, studentsData } from "@/lib/data";
 import Image from "next/image";
 import Link from "next/link";
+import { withAuth } from "@/lib/withAuth";
+
 
 type Student = {
   id: number;
@@ -121,4 +126,4 @@ const StudentListPage = () => {
   );
 };
 
-export default StudentListPage;
+export default  withAuth(StudentListPage);

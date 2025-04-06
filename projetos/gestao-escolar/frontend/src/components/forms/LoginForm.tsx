@@ -9,6 +9,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Cookies from "js-cookie";
 
+import LoadingOverlay from "../cadastro/LoadingOverlay";
+import { AnimatePresence, motion } from "framer-motion";
+
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -55,8 +58,12 @@ export default function LoginForm() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  
 
   const onSubmit = async (values: LoginSchema) => {
+    setLoading(true);
+
     try {
       const res = await axios.post("http://localhost:8000/api/auth/login/", values);
       const { token, refresh_token, nome, tipo } = res.data;
@@ -92,8 +99,11 @@ export default function LoginForm() {
         </span>
       </h2>
 
+      
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+
           <FormField
             control={form.control}
             name="email"
@@ -107,6 +117,7 @@ export default function LoginForm() {
               </FormItem>
             )}
           />
+
 
           <FormField
             control={form.control}
@@ -123,6 +134,8 @@ export default function LoginForm() {
                       className="pr-10"
                     />
                   </FormControl>
+                  <AnimatePresence>{loading && <LoadingOverlay />}</AnimatePresence>
+
                   <div
                     className="absolute inset-y-0 right-3 flex items-center cursor-pointer text-gray-500"
                     onClick={() => setShowPassword(!showPassword)}
