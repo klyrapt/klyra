@@ -1,8 +1,13 @@
+"use client";
+
+
 import Announcements from "@/components/Announcements";
 import BigCalendar from "@/components/BigCalender";
 import Performance from "@/components/Performance";
 import Image from "next/image";
 import Link from "next/link";
+import { withAuth } from "@/lib/withAuth";
+
 
 const SingleStudentPage = () => {
   return (
@@ -142,4 +147,4 @@ const SingleStudentPage = () => {
   );
 };
 
-export default SingleStudentPage;
+export default withAuth(SingleStudentPage);

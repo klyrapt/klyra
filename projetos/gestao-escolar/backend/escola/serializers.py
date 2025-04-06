@@ -5,7 +5,7 @@ from .models import Instituicao
 from django.core.mail import send_mail
 import random
 
-
+from django.conf import settings
 
 def gerar_codigo_verificacao():
     return str(random.randint(100000, 999999))
@@ -92,8 +92,10 @@ class InstituicaoCreateSerializer(serializers.ModelSerializer):
     def enviar_email_confirmacao(self, email, codigo, nome):
         assunto = "Confirmação de Email - Plataforma Klyra"
         mensagem = f"Olá, {nome} Seu código de verificação é: {codigo}"
-        remetente = "mamadusama19@gmail.com"  # Você pode configurar isso no settings
-        send_mail(
+        remetente = settings.DEFAULT_FROM_EMAIL  
+        
+        try:
+            send_mail(
             assunto,
             mensagem,
             remetente,
@@ -101,3 +103,6 @@ class InstituicaoCreateSerializer(serializers.ModelSerializer):
             fail_silently=False,
         )
 
+        except Exception as e:
+            print(f"Erro ao enviar e-mail: {e}")
+       

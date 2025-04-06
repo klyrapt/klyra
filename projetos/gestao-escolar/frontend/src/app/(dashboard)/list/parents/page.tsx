@@ -1,9 +1,14 @@
+"use client";
+
+
 import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import { parentsData, role } from "@/lib/data";
 import Image from "next/image";
+import { withAuth } from "@/lib/withAuth";
+
 
 type Parent = {
   id: number;
@@ -96,4 +101,4 @@ const ParentListPage = () => {
   );
 };
 
-export default ParentListPage;
+export default withAuth(ParentListPage);

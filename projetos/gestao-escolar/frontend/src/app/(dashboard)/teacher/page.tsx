@@ -1,5 +1,11 @@
+"use client";
+
+
+
 import Announcements from "@/components/Announcements";
 import BigCalendar from "@/components/BigCalender";
+import { withAuth } from "@/lib/withAuth";
+
 
 const TeacherPage = () => {
   return (
@@ -19,4 +25,4 @@ const TeacherPage = () => {
   );
 };
 
-export default TeacherPage;
+export default withAuth(TeacherPage);

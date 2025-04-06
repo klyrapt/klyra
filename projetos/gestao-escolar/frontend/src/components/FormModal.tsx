@@ -6,16 +6,36 @@ import { useState } from "react";
 import axios from "axios";
 import DeletePopup from "./DeletePopup";
 
+// Dynamically import the form components
 const TeacherForm = dynamic(() => import("./forms/TeacherForm"));
 const StudentForm = dynamic(() => import("./forms/StudentForm"));
 const SubjectForm = dynamic(() => import("../components/forms/SubjectForm"));
+const TurmaForm = dynamic(() => import("../components/forms/TurmaForm"));
 
-const forms: {
-  [key: string]: (type: "create" | "update", data?: any) => JSX.Element;
-} = {
-  teacher: (type, data) => <TeacherForm type={type} data={data} />,
-  student: (type, data) => <StudentForm type={type} data={data} />,
-  subject: (type, data) => <SubjectForm type={type} data={data} />,
+// Map forms to each table
+const forms: Record<string, (type: "create" | "update", data?: any, onSuccess?: () => void) => JSX.Element> = {
+  teacher: (type, data, onSuccess) => <TeacherForm type={type} data={data} onSuccess={onSuccess} />,
+  student: (type, data, onSuccess) => <StudentForm type={type} data={data} onSuccess={onSuccess} />,
+  subject: (type, data, onSuccess) => <SubjectForm type={type} data={data} onSuccess={onSuccess} />,
+  class: (type, data, onSuccess) => <TurmaForm type={type} data={data} onSuccess={onSuccess} />,
+};
+
+// Map logical table names to real API endpoint names
+const endpointMap: Record<string, string> = {
+  teacher: "professores",
+  student: "alunos",
+  subject: "disciplinas",
+  class: "turmas",
+  turmas: "turmas",
+  disciplina: "disciplinas",
+  lesson: "aulas",
+  exam: "exames",
+  assignment: "tarefas",
+  result: "resultados",
+  attendance: "presencas",
+  event: "eventos",
+  announcement: "avisos",
+  parent: "pais",
 };
 
 const FormModal = ({
@@ -23,6 +43,7 @@ const FormModal = ({
   type,
   data,
   id,
+  onSuccess,
 }: {
   table:
     | "teacher"
@@ -30,17 +51,19 @@ const FormModal = ({
     | "parent"
     | "subject"
     | "disciplina"
-    | "class"
+    | "turmas"
     | "lesson"
     | "exam"
     | "assignment"
     | "result"
     | "attendance"
     | "event"
-    | "announcement";
+    | "announcement"
+    | "class";
   type: "create" | "update" | "delete";
   data?: any;
   id?: number;
+  onSuccess?: () => void;
 }) => {
   const size = type === "create" ? "w-8 h-8" : "w-7 h-7";
   const bgColor =
@@ -56,21 +79,26 @@ const FormModal = ({
   const handleDelete = async () => {
     try {
       const token = localStorage.getItem("accessToken");
-      await axios.delete(`http://localhost:8000/api/disciplinas/${id}/`, {
+      const endpoint = endpointMap[table];
+
+      if (!endpoint) throw new Error(`Endpoint não mapeado para: ${table}`);
+
+      await axios.delete(`http://localhost:8000/api/${endpoint}/${id}/`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      setPopup({ type: "success", message: "Disciplina excluída com sucesso!" });
+
+      setPopup({ type: "success", message: "Registro excluído com sucesso!" });
       setTimeout(() => {
         setPopup(null);
         setOpen(false);
-        window.location.reload();
-      }, 2500);
+        onSuccess?.();
+      }, 2000);
     } catch (err) {
       console.error("Erro ao deletar:", err);
-      setPopup({ type: "error", message: "Erro ao excluir a disciplina!" });
-      setTimeout(() => setPopup(null), 2500);
+      setPopup({ type: "error", message: "Erro ao excluir!" });
+      setTimeout(() => setPopup(null), 2000);
     }
   };
 
@@ -79,7 +107,7 @@ const FormModal = ({
       <div className="p-4 flex flex-col gap-4 items-center justify-center text-center relative">
         {popup && <DeletePopup type={popup.type} message={popup.message} />}
         <span className="text-center font-medium">
-          Todos os dados serão perdidos. Tem certeza que deseja excluir esta disciplina?
+          Todos os dados serão perdidos. Tem certeza que deseja excluir?
         </span>
         <button
           type="button"
@@ -90,7 +118,7 @@ const FormModal = ({
         </button>
       </div>
     ) : type === "create" || type === "update" ? (
-      forms[table](type, data)
+      forms[table](type, data, onSuccess)
     ) : (
       "Formulário não encontrado"
     );

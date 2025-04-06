@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
+import { withAuth } from "@/lib/withAuth";
+
 import {
   Tabs,
   TabsContent,
@@ -20,7 +22,7 @@ import {
   UserCog,
 } from "lucide-react";
 
-export default function PerfilAdminPage() {
+  const  PerfilAdminPage = () => {
   const [editando, setEditando] = useState(false);
   const [dados, setDados] = useState({
     nome: "John Doe",
@@ -194,3 +196,5 @@ export default function PerfilAdminPage() {
     </div>
   );
 }
+
+export default withAuth(PerfilAdminPage);

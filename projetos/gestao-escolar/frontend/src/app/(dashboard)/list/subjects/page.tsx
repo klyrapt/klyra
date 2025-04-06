@@ -9,6 +9,8 @@ import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import { role } from "@/lib/data";
+import { withAuth } from "@/lib/withAuth";
+
 
 type Disciplina = {
   id: number;
@@ -99,4 +101,4 @@ const DisciplinaListPage = () => {
   );
 };
 
-export default DisciplinaListPage;
+export default withAuth(DisciplinaListPage);

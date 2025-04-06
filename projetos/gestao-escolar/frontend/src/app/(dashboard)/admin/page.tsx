@@ -1,11 +1,17 @@
+"use client";
+
+
 import Announcements from "@/components/Announcements";
 import AttendanceChart from "@/components/AttendanceChart";
 import CountChart from "@/components/CountChart";
 import EventCalendar from "@/components/EventCalendar";
 import FinanceChart from "@/components/FinanceChart";
 import UserCard from "@/components/UserCard";
+import { useAuthExpiration } from "@/lib/useAuthExpiration";
+import { withAuth } from "@/lib/withAuth";
 
 const AdminPage = () => {
+    useAuthExpiration(); // protege essa página contra tokens expirados
   return (
     <div className="p-4 flex gap-4 flex-col md:flex-row">
       {/* LEFT */}
@@ -42,4 +48,4 @@ const AdminPage = () => {
   );
 };
 
-export default AdminPage;
+export default withAuth(AdminPage);

@@ -33,8 +33,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = []
 
     def __str__(self):
-        return self.email
+        return self.nome
     
+    def get_full_name(self):
+        return self.nome
     
 
     def gerar_novo_codigo(self):

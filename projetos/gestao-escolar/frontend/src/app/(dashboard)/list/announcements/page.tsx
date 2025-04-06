@@ -1,9 +1,14 @@
+"use client";
+
+
 import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import { announcementsData, role } from "@/lib/data";
 import Image from "next/image";
+import { withAuth } from "@/lib/withAuth";
+
 
 type Announcement = {
   id: number;
@@ -84,4 +89,4 @@ const AnnouncementListPage = () => {
   );
 };
 
-export default AnnouncementListPage;
+export default withAuth(AnnouncementListPage);

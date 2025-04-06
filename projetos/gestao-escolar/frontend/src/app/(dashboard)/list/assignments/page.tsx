@@ -1,3 +1,6 @@
+"use client";
+
+
 import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
@@ -7,6 +10,8 @@ import {
   role,
 } from "@/lib/data";
 import Image from "next/image";
+import { withAuth } from "@/lib/withAuth";
+
 
 type Assignment = {
   id: number;
@@ -92,4 +97,4 @@ const AssignmentListPage = () => {
   );
 };
 
-export default AssignmentListPage;
+export default withAuth(AssignmentListPage);
