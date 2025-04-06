@@ -30,7 +30,7 @@ urlpatterns = [
     path("api/", include("responsavel.urls")),
     path("api/", include("turma.urls")),
     path("api/", include("professor.urls")),
-    path('api/ensinos/', include('ensino.urls')),
+    path('api/', include('ensino.urls')),
 
     path('api/planos/', include('planos.urls')),
 
