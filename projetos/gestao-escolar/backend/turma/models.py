@@ -29,4 +29,4 @@ class Turma(models.Model):
         ordering = ["ano_letivo", "nome"]
 
     def __str__(self):
-        return f"{self.nome} - {self.ano_letivo}"
+        return f"{self.nome}"
