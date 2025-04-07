@@ -8,30 +8,49 @@ from turma.models import Turma
 from turma.serializers import TurmaSerializer
 from escola.models import Instituicao
 from nivel.models import Nivel
+from rest_framework.generics import ListCreateAPIView
+
 from professor.models import Professor
 
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.filters import SearchFilter
 
+
+
+
+class PaginacaoPadrao(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = "page_size"
+    max_page_size = 100
 
 
 def is_admin_da_escola(user):
     return Instituicao.objects.filter(admin=user).first()
 
-class TurmaListCreateAPIView(APIView):
+class TurmaListCreateAPIView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        user = request.user
+    serializer_class = TurmaSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = PaginacaoPadrao
+    filter_backends = [SearchFilter]
+
+    search_fields = ['nome', 'ano_letivo', 'diretor_turma__usuario__nome']
+
+
+    def get_queryset(self):
+        user = self.request.user
         instituicao = is_admin_da_escola(user)
 
         if instituicao:
-            turmas = Turma.objects.filter(instituicao=instituicao)
+            return Turma.objects.filter(instituicao=instituicao)
         elif user.tipo in ["aluno", "responsavel", "professor"]:
-            turmas = Turma.objects.none()  # ou turmas visíveis para o perfil
+            return Turma.objects.none()
         else:
-            return Response({"detail": "Sem permissão."}, status=status.HTTP_403_FORBIDDEN)
+            return Turma.objects.none()  # evita erro com Response
 
-        serializer = TurmaSerializer(turmas, many=True)
-        return Response(serializer.data)
+
+
 
     def post(self, request):
         user = request.user

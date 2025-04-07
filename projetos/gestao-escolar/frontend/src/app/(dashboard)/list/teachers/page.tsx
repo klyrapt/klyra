@@ -39,6 +39,7 @@ const TeacherListPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
+  
   const [popup, setPopup] = useState<null | { type: "success" | "error"; message: string }>(null);
 
   const fetchProfessores = async (page = 1, search = "") => {
