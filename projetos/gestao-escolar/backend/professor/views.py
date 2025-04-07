@@ -9,6 +9,14 @@ from rest_framework import status
 from professor.serializers import ProfessorSerializer
 from django.conf import settings
 from escola.models import Instituicao
+from rest_framework.pagination import PageNumberPagination
+
+
+# Paginação padrão
+class PaginacaoPadrao(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = "page_size"
+    max_page_size = 100
 
 
 
@@ -18,6 +26,7 @@ def get_instituicao_do_admin(user):
 
 class ProfessorListCreateAPIView(APIView):
     permission_classes = [IsAuthenticated]
+    pagination_class = PaginacaoPadrao  # ✅ Aqui usamos a sua classe customizada
 
     def get(self, request):
         instituicao = get_instituicao_do_admin(request.user)
@@ -25,8 +34,12 @@ class ProfessorListCreateAPIView(APIView):
             return Response({"detail": "Sem permissão."}, status=status.HTTP_403_FORBIDDEN)
 
         professores = Professor.objects.filter(instituicao=instituicao)
-        serializer = ProfessorSerializer(professores, many=True)
-        return Response(serializer.data)
+
+        paginator = self.pagination_class()  # ✅ Paginação correta
+        page = paginator.paginate_queryset(professores, request)
+        serializer = ProfessorSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
 
     def post(self, request):
         instituicao = get_instituicao_do_admin(request.user)

@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Ensino
+from escola.models import Instituicao
 
 
 class EnsinoSerializer(serializers.ModelSerializer):
@@ -11,6 +12,10 @@ class EnsinoSerializer(serializers.ModelSerializer):
         model = Ensino
         fields = ['id', 'professor', 'professor_nome', 'disciplina', 'disciplina_nome', 'turma', 'turma_nome']
 
+
+
+    
+    
     def get_professor_nome(self, obj):
         return obj.professor.usuario.get_full_name()
 
@@ -22,7 +27,11 @@ class EnsinoSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         user = self.context['request'].user
-        instituicao = getattr(user, 'instituicao', None)
+        def get_instituicao_do_admin(user):
+            return Instituicao.objects.filter(admin=user).first()
+
+        instituicao = get_instituicao_do_admin(user)
+       
 
         if not instituicao:
             raise serializers.ValidationError("Usuário não está vinculado a nenhuma instituição.")
