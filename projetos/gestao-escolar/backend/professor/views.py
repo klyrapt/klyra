@@ -1,15 +1,18 @@
-from django.utils.crypto import get_random_string
-from django.core.mail import send_mail
-from core.models import User
-from professor.models import Professor
-from rest_framework.views import APIView
+from rest_framework.generics import ListCreateAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 from rest_framework import status
-from professor.serializers import ProfessorSerializer
-from django.conf import settings
-from escola.models import Instituicao
 from rest_framework.pagination import PageNumberPagination
+from django.utils.crypto import get_random_string
+from django.core.mail import send_mail
+from django.conf import settings
+from rest_framework.views import APIView
+
+from core.models import User
+from professor.models import Professor
+from professor.serializers import ProfessorSerializer
+from escola.models import Instituicao
 
 
 # Paginação padrão
@@ -19,27 +22,20 @@ class PaginacaoPadrao(PageNumberPagination):
     max_page_size = 100
 
 
-
 def get_instituicao_do_admin(user):
     return Instituicao.objects.filter(admin=user).first()
 
 
-class ProfessorListCreateAPIView(APIView):
+class ProfessorListCreateAPIView(ListCreateAPIView):
+    serializer_class = ProfessorSerializer
     permission_classes = [IsAuthenticated]
-    pagination_class = PaginacaoPadrao  # ✅ Aqui usamos a sua classe customizada
+    pagination_class = PaginacaoPadrao
+    filter_backends = [SearchFilter]
+    search_fields = ['usuario__nome', 'usuario__email']
 
-    def get(self, request):
-        instituicao = get_instituicao_do_admin(request.user)
-        if not instituicao:
-            return Response({"detail": "Sem permissão."}, status=status.HTTP_403_FORBIDDEN)
-
-        professores = Professor.objects.filter(instituicao=instituicao)
-
-        paginator = self.pagination_class()  # ✅ Paginação correta
-        page = paginator.paginate_queryset(professores, request)
-        serializer = ProfessorSerializer(page, many=True)
-        return paginator.get_paginated_response(serializer.data)
-
+    def get_queryset(self):
+        instituicao = get_instituicao_do_admin(self.request.user)
+        return Professor.objects.filter(instituicao=instituicao)
 
     def post(self, request):
         instituicao = get_instituicao_do_admin(request.user)
@@ -82,7 +78,6 @@ class ProfessorListCreateAPIView(APIView):
             ativo=True
         )
 
-
         send_mail(
             subject="Cadastro como Professor - Plataforma EduGestão",
             message=f"Olá, {nome}!\n\nVocê foi cadastrado como professor na instituição {instituicao.nome}.\n\n"
@@ -97,7 +92,6 @@ class ProfessorListCreateAPIView(APIView):
             "mensagem": "Professor criado com sucesso. Verifique o e-mail para ativar a conta.",
             "professor_id": professor.id
         }, status=status.HTTP_201_CREATED)
-
 
 
 
