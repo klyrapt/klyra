@@ -5,7 +5,7 @@ import axios from "axios";
 import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
-import TableSearch from "@/components/TableSearch";
+import TurmaTableSearch from "@/components/TurmaTableSearch";
 import Image from "next/image";
 import { getAuthToken } from "@/lib/auth";
 import { withAuth } from "@/lib/withAuth";
@@ -48,26 +48,65 @@ const columns = [
 const ClassListPage = () => {
   const [turmas, setTurmas] = useState<Turma[]>([]);
   const [loading, setLoading] = useState(true);
+  const [count, setCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
 
-  const fetchTurmas = async () => {
+
+
+
+
+  const fetchTurmas = async (page = 1, search = "") => {
     try {
       const token = getAuthToken();
       const response = await axios.get("http://localhost:8000/api/turmas/", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        params: { page, search }
       });
-      setTurmas(response.data);
+  
+      setTurmas(response.data.results); // <- importante
+      setCount(response.data.count);    // <- importante
+      setCurrentPage(page);
     } catch (error) {
       console.error("Erro ao buscar turmas:", error);
     } finally {
       setLoading(false);
     }
   };
+  
+  
 
   useEffect(() => {
     fetchTurmas();
   }, []);
+
+
+  
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+
+    if (searchTimeout) clearTimeout(searchTimeout);
+    const timeout = setTimeout(() => {
+      fetchTurmas(1, value);
+    }, 500);
+    setSearchTimeout(timeout);
+  };
+
+  
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      if (searchTimeout) clearTimeout(searchTimeout);
+      fetchTurmas(1, searchTerm);
+    }
+  };
+
+
+
+
 
   const renderRow = (item: Turma) => (
     <tr
@@ -103,7 +142,12 @@ const ClassListPage = () => {
       <div className="flex items-center justify-between">
         <h1 className="hidden md:block text-lg font-semibold">Todas as Turmas</h1>
         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-          <TableSearch />
+          <TurmaTableSearch 
+           value={searchTerm}
+           onChange={handleSearchChange}
+           onKeyDown={handleSearchKeyDown}
+          
+          />
           <div className="flex items-center gap-4 self-end">
             <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
               <Image src="/filter.png" alt="Filtro" width={14} height={14} />
@@ -123,8 +167,18 @@ const ClassListPage = () => {
         <Table columns={columns} renderRow={renderRow} data={turmas} />
       )}
 
+      {!loading && turmas.length === 0 && (
+        <p className="text-center py-6 text-gray-500">Nenhuma turma encontrada.</p>
+      )}
+
+
       {/* PAGINAÇÃO */}
-      <Pagination />
+      <Pagination
+        currentPage={currentPage}
+        totalItems={count}
+        pageSize={10}
+        onPageChange={(page) => fetchTurmas(page, searchTerm)}
+      />
     </div>
   );
 };
