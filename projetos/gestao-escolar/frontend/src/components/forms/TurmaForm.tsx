@@ -6,15 +6,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getAuthToken } from "@/lib/auth";
+import DeletePopup from "@/components/DeletePopup";
 
 const TurmaForm = ({
   type,
   data,
   onSuccess,
+  onClose,
 }: {
   type: "create" | "update";
   data?: any;
   onSuccess?: () => void;
+  onClose?: () => void;
 }) => {
   const [formData, setFormData] = useState({
     nome: data?.nome || "",
@@ -27,6 +30,7 @@ const TurmaForm = ({
 
   const [niveis, setNiveis] = useState([]);
   const [professores, setProfessores] = useState([]);
+  const [popup, setPopup] = useState<null | { type: "success" | "error"; message: string }>(null);
 
   const token = getAuthToken();
 
@@ -42,7 +46,7 @@ const TurmaForm = ({
           }),
         ]);
         setNiveis(nivRes.data);
-        setProfessores(profRes.data);
+        setProfessores(profRes.data.results || []);
       } catch (error) {
         console.error("Erro ao carregar dados:", error);
       }
@@ -69,9 +73,7 @@ const TurmaForm = ({
         ...formData,
         capacidade: Number(formData.capacidade),
         nivel: Number(formData.nivel),
-        diretor_turma: formData.diretor_turma
-          ? Number(formData.diretor_turma)
-          : null,
+        diretor_turma: formData.diretor_turma ? Number(formData.diretor_turma) : null,
       };
 
       await method(url, payload, {
@@ -80,14 +82,30 @@ const TurmaForm = ({
         },
       });
 
-      if (onSuccess) onSuccess();
+      setPopup({
+        type: "success",
+        message: type === "create" ? "Turma criada com sucesso!" : "Turma atualizada!",
+      });
+
+      setTimeout(() => {
+        setPopup(null);
+        onSuccess?.();
+        onClose?.();
+      }, 2000);
     } catch (error) {
       console.error("Erro ao salvar turma:", error);
+      setPopup({
+        type: "error",
+        message: "Erro ao salvar turma. Verifique os dados.",
+      });
+      setTimeout(() => setPopup(null), 2500);
     }
   };
 
   return (
-    <form className="space-y-4" onSubmit={handleSubmit}>
+    <form className="space-y-4 relative" onSubmit={handleSubmit}>
+      {popup && <DeletePopup type={popup.type} message={popup.message} />}
+      
       <div>
         <Label htmlFor="nome">Nome da Turma</Label>
         <Input

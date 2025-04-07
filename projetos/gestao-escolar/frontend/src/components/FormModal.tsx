@@ -24,9 +24,15 @@ const forms: Record<
   ) => JSX.Element
 > = {
   teacher: (type, data, onSuccess) => <TeacherForm type={type} data={data} onSuccess={onSuccess} />,
-  student: (type, data, onSuccess) => <StudentForm type={type} data={data} onSuccess={onSuccess} />,
-  subject: (type, data, onSuccess) => <SubjectForm type={type} data={data} onSuccess={onSuccess} />,
-  class: (type, data, onSuccess) => <TurmaForm type={type} data={data} onSuccess={onSuccess} />,
+  student: (type, data, onSuccess, onClose) => (
+    <StudentForm type={type} data={data} onSuccess={onSuccess} onClose={onClose} />
+  ),
+  subject: (type, data, onSuccess, onClose) => (
+    <SubjectForm type={type} data={data} onSuccess={onSuccess} onClose={onClose} />
+  ),
+  class: (type, data, onSuccess, onClose) => (
+    <TurmaForm type={type} data={data} onSuccess={onSuccess} onClose={onClose} />
+  ),
   teacherAssignment: (type, data, onSuccess, onClose) => (
     <TeacherAssignmentForm
       professorId={data.professor}
