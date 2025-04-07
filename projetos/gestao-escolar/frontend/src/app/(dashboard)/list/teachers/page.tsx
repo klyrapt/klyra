@@ -35,62 +35,92 @@ const columns = [
 
 const TeacherListPage = () => {
   const [professores, setProfessores] = useState<Professor[]>([]);
+  const [count, setCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
   const [popup, setPopup] = useState<null | { type: "success" | "error"; message: string }>(null);
 
-  const fetchProfessores = async () => {
-    try {
-      const token = localStorage.getItem("accessToken");
-      const res = await axios.get("http://localhost:8000/api/professores/", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setProfessores(res.data);
-    } catch (error) {
-      console.error("Erro ao carregar professores:", error);
-    }
-  };
+
+
+
+const fetchProfessores = async (page = 1) => {
+  try {
+    const token = localStorage.getItem("accessToken");
+
+    const [profRes, ensinoRes] = await Promise.all([
+      axios.get("http://localhost:8000/api/professores/", {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { page },
+      }),
+      axios.get("http://localhost:8000/api/ensinos/", {
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+    ]);
+
+    const ensinos = ensinoRes.data;
+
+    const professoresComDados = profRes.data.results.map((prof: any) => {
+      const ensinosDoProfessor = ensinos.filter(
+        (e: any) => e.professor === prof.id
+      );
+
+      return {
+        ...prof,
+        disciplinas: Array.from(new Set(ensinosDoProfessor.map((e: any) => e.disciplina_nome))),
+        turmas: Array.from(new Set(ensinosDoProfessor.map((e: any) => e.turma_nome))),
+      };
+    });
+
+    setProfessores(professoresComDados);
+    setCount(profRes.data.count);
+    setCurrentPage(page);
+  } catch (error) {
+    console.error("Erro ao carregar professores:", error);
+    setPopup({ type: "error", message: "Erro ao carregar professores." });
+  }
+};
+
 
   useEffect(() => {
     fetchProfessores();
   }, []);
 
   const renderRow = (item: Professor) => (
-    <tr
-      key={item.id}
-      className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
-    >
-      <td className="flex items-center gap-4 p-4">
-      <Image
-        src={item.foto?.startsWith("http") ? item.foto : `${BASE_URL}${item.foto}`}
-        alt="Foto do professor"
-        width={40}
-        height={40}
-        className="w-10 h-10 rounded-full object-cover"
-      />
-
+    <tr key={item.id} className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight">
+      <td className="flex items-center gap-4 px-4 py-3 min-w-[200px]">
+        <Image
+          src={item.foto?.startsWith("http") ? item.foto : `${BASE_URL}${item.foto}`}
+          alt="Foto do professor"
+          width={40}
+          height={40}
+          className="w-10 h-10 rounded-full object-cover"
+        />
         <div className="flex flex-col">
           <h3 className="font-semibold">{item.nome}</h3>
-          <p className="text-xs text-gray-500">{item.email}</p>
+          <p className="text-xs text-gray-500 break-words">{item.email}</p>
         </div>
       </td>
-      <td className="hidden md:table-cell">{item.disciplinas?.join(", ") || "-"}</td>
-      <td className="hidden md:table-cell">{item.turmas?.join(", ") || "-"}</td>
-      <td className="hidden md:table-cell">{item.telefone || "-"}</td>
-      <td className="hidden md:table-cell">{item.endereco_completo || "-"}</td>
-      <td>
-        <div className="flex items-center gap-2">
+      <td className="hidden md:table-cell px-4 py-3 whitespace-pre-line break-words min-w-[150px]">
+        {item.disciplinas?.join(", ") || "-"}
+      </td>
+      <td className="hidden md:table-cell px-4 py-3 whitespace-pre-line break-words min-w-[120px]">
+        {item.turmas?.join(", ") || "-"}
+      </td>
+      <td className="hidden md:table-cell px-4 py-3">{item.telefone || "-"}</td>
+      <td className="hidden md:table-cell px-4 py-3">{item.endereco_completo || "-"}</td>
+      <td className="px-4 py-3">
+        <div className="flex items-center gap-3">
           <Link href={`/list/teachers/${item.id}`}>
             <button className="w-7 h-7 flex items-center justify-center rounded-full bg-lamaSky">
               <Image src="/view.png" alt="" width={16} height={16} />
             </button>
           </Link>
-          <FormModal table="teacher" type="update" data={item} onSuccess={fetchProfessores} />
-          <FormModal table="teacher" type="delete" id={item.id} onSuccess={fetchProfessores} />
+          <FormModal table="teacher" type="update" data={item} onSuccess={() => fetchProfessores(currentPage)} />
+          <FormModal table="teacher" type="delete" id={item.id} onSuccess={() => fetchProfessores(currentPage)} />
         </div>
       </td>
     </tr>
   );
+  
 
   return (
     <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
@@ -106,14 +136,21 @@ const TeacherListPage = () => {
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
             {popup && <DeletePopup type={popup.type} message={popup.message} />}
-            <FormModal table="teacher" type="create" onSuccess={fetchProfessores} />
+            <FormModal table="teacher" type="create" onSuccess={() => fetchProfessores(currentPage)} />
           </div>
         </div>
       </div>
 
-      <Table columns={columns} renderRow={renderRow} data={professores} />
+      <div className="overflow-x-auto mt-4">
+        <Table columns={columns} renderRow={renderRow} data={professores} />
+      </div>
 
-      <Pagination />
+      <Pagination
+        currentPage={currentPage}
+        totalItems={count}
+        pageSize={10}
+        onPageChange={(page) => fetchProfessores(page)}
+      />
     </div>
   );
 };
