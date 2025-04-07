@@ -114,8 +114,11 @@ const fetchProfessores = async (page = 1) => {
               <Image src="/view.png" alt="" width={16} height={16} />
             </button>
           </Link>
+          
           <FormModal table="teacher" type="update" data={item} onSuccess={() => fetchProfessores(currentPage)} />
           <FormModal table="teacher" type="delete" id={item.id} onSuccess={() => fetchProfessores(currentPage)} />
+          <FormModal table="teacherAssignment" type="create" data={{ professor: item.id }} onSuccess={() => fetchProfessores(currentPage)} />
+
         </div>
       </td>
     </tr>
@@ -128,6 +131,9 @@ const fetchProfessores = async (page = 1) => {
         <h1 className="hidden md:block text-lg font-semibold">Todos os Professores</h1>
         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
           <TableSearch />
+
+      
+
           <div className="flex items-center gap-4 self-end">
             <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
               <Image src="/filter.png" alt="" width={14} height={14} />
@@ -136,6 +142,7 @@ const fetchProfessores = async (page = 1) => {
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
             {popup && <DeletePopup type={popup.type} message={popup.message} />}
+
             <FormModal table="teacher" type="create" onSuccess={() => fetchProfessores(currentPage)} />
           </div>
         </div>
