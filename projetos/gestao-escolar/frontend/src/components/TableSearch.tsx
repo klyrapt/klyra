@@ -1,13 +1,22 @@
 import Image from "next/image";
 
-const TableSearch = () => {
+type TableSearchProps = {
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+};
+
+const TableSearch = ({ value, onChange, onKeyDown }: TableSearchProps) => {
   return (
-    <div className="w-full md:w-auto flex items-center gap-2 text-xs rounded-full ring-[1.5px] ring-gray-300 px-2">
-      <Image src="/search.png" alt="" width={14} height={14} />
+    <div className="w-full md:w-auto flex items-center gap-2 text-sm border border-gray-300 rounded-md px-2 py-1 bg-white">
+      <Image src="/search.png" alt="Buscar" width={16} height={16} />
       <input
         type="text"
-        placeholder="Search..."
-        className="w-[200px] p-2 bg-transparent outline-none"
+        placeholder="Pesquisar professores..."
+        value={value}
+        onChange={onChange}
+        onKeyDown={onKeyDown}
+        className="outline-none w-full bg-transparent"
       />
     </div>
   );

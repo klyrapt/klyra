@@ -37,52 +37,65 @@ const TeacherListPage = () => {
   const [professores, setProfessores] = useState<Professor[]>([]);
   const [count, setCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
   const [popup, setPopup] = useState<null | { type: "success" | "error"; message: string }>(null);
 
+  const fetchProfessores = async (page = 1, search = "") => {
+    try {
+      const token = localStorage.getItem("accessToken");
 
+      const [profRes, ensinoRes] = await Promise.all([
+        axios.get("http://localhost:8000/api/professores/", {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { page, search },
+        }),
+        axios.get("http://localhost:8000/api/ensinos/", {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
 
+      const ensinos = ensinoRes.data;
 
-const fetchProfessores = async (page = 1) => {
-  try {
-    const token = localStorage.getItem("accessToken");
+      const professoresComDados = profRes.data.results.map((prof: any) => {
+        const ensinosDoProfessor = ensinos.filter((e: any) => e.professor === prof.id);
+        return {
+          ...prof,
+          disciplinas: Array.from(new Set(ensinosDoProfessor.map((e: any) => e.disciplina_nome))),
+          turmas: Array.from(new Set(ensinosDoProfessor.map((e: any) => e.turma_nome))),
+        };
+      });
 
-    const [profRes, ensinoRes] = await Promise.all([
-      axios.get("http://localhost:8000/api/professores/", {
-        headers: { Authorization: `Bearer ${token}` },
-        params: { page },
-      }),
-      axios.get("http://localhost:8000/api/ensinos/", {
-        headers: { Authorization: `Bearer ${token}` },
-      }),
-    ]);
-
-    const ensinos = ensinoRes.data;
-
-    const professoresComDados = profRes.data.results.map((prof: any) => {
-      const ensinosDoProfessor = ensinos.filter(
-        (e: any) => e.professor === prof.id
-      );
-
-      return {
-        ...prof,
-        disciplinas: Array.from(new Set(ensinosDoProfessor.map((e: any) => e.disciplina_nome))),
-        turmas: Array.from(new Set(ensinosDoProfessor.map((e: any) => e.turma_nome))),
-      };
-    });
-
-    setProfessores(professoresComDados);
-    setCount(profRes.data.count);
-    setCurrentPage(page);
-  } catch (error) {
-    console.error("Erro ao carregar professores:", error);
-    setPopup({ type: "error", message: "Erro ao carregar professores." });
-  }
-};
-
+      setProfessores(professoresComDados);
+      setCount(profRes.data.count);
+      setCurrentPage(page);
+    } catch (error) {
+      console.error("Erro ao carregar professores:", error);
+      setPopup({ type: "error", message: "Erro ao carregar professores." });
+    }
+  };
 
   useEffect(() => {
     fetchProfessores();
   }, []);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+
+    if (searchTimeout) clearTimeout(searchTimeout);
+    const timeout = setTimeout(() => {
+      fetchProfessores(1, value);
+    }, 500);
+    setSearchTimeout(timeout);
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      if (searchTimeout) clearTimeout(searchTimeout);
+      fetchProfessores(1, searchTerm);
+    }
+  };
 
   const renderRow = (item: Professor) => (
     <tr key={item.id} className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight">
@@ -114,26 +127,24 @@ const fetchProfessores = async (page = 1) => {
               <Image src="/view.png" alt="" width={16} height={16} />
             </button>
           </Link>
-          
-          <FormModal table="teacher" type="update" data={item} onSuccess={() => fetchProfessores(currentPage)} />
-          <FormModal table="teacher" type="delete" id={item.id} onSuccess={() => fetchProfessores(currentPage)} />
-          <FormModal table="teacherAssignment" type="create" data={{ professor: item.id }} onSuccess={() => fetchProfessores(currentPage)} />
-
+          <FormModal table="teacher" type="update" data={item} onSuccess={() => fetchProfessores(currentPage, searchTerm)} />
+          <FormModal table="teacher" type="delete" id={item.id} onSuccess={() => fetchProfessores(currentPage, searchTerm)} />
+          <FormModal table="teacherAssignment" type="create" data={{ professor: item.id }} onSuccess={() => fetchProfessores(currentPage, searchTerm)} />
         </div>
       </td>
     </tr>
   );
-  
 
   return (
     <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
       <div className="flex items-center justify-between">
         <h1 className="hidden md:block text-lg font-semibold">Todos os Professores</h1>
         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-          <TableSearch />
-
-      
-
+          <TableSearch
+            value={searchTerm}
+            onChange={handleSearchChange}
+            onKeyDown={handleSearchKeyDown}
+          />
           <div className="flex items-center gap-4 self-end">
             <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
               <Image src="/filter.png" alt="" width={14} height={14} />
@@ -142,21 +153,27 @@ const fetchProfessores = async (page = 1) => {
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
             {popup && <DeletePopup type={popup.type} message={popup.message} />}
-
-            <FormModal table="teacher" type="create" onSuccess={() => fetchProfessores(currentPage)} />
+            <FormModal table="teacher" type="create" onSuccess={() => fetchProfessores(currentPage, searchTerm)} />
           </div>
         </div>
       </div>
 
       <div className="overflow-x-auto mt-4">
-        <Table columns={columns} renderRow={renderRow} data={professores} />
+          {professores.length > 0 ? (
+            <Table columns={columns} renderRow={renderRow} data={professores} />
+          ) : (
+            <p className="text-center text-sm text-red-600 mt-4">
+              Nenhum professor encontrado com esse nome.
+            </p>
+          )}
       </div>
+
 
       <Pagination
         currentPage={currentPage}
         totalItems={count}
         pageSize={10}
-        onPageChange={(page) => fetchProfessores(page)}
+        onPageChange={(page) => fetchProfessores(page, searchTerm)}
       />
     </div>
   );
