@@ -11,17 +11,29 @@ const TeacherForm = dynamic(() => import("./forms/TeacherForm"));
 const StudentForm = dynamic(() => import("./forms/StudentForm"));
 const SubjectForm = dynamic(() => import("../components/forms/SubjectForm"));
 const TurmaForm = dynamic(() => import("../components/forms/TurmaForm"));
-const TeacherAssignmentForm = dynamic(() => import("../components/forms/TeacherAssignmentForm")); // novo
+const TeacherAssignmentForm = dynamic(() => import("../components/forms/TeacherAssignmentForm"));
 
 // Map forms to each table
-const forms: Record<string, (type: "create" | "update", data?: any, onSuccess?: () => void) => JSX.Element> = {
-  teacher: (type, data, onSuccess) => <TeacherForm type={type} data={data} onSuccess={onSuccess} />, 
-  student: (type, data, onSuccess) => <StudentForm type={type} data={data} onSuccess={onSuccess} />, 
-  subject: (type, data, onSuccess) => <SubjectForm type={type} data={data} onSuccess={onSuccess} />, 
-  class: (type, data, onSuccess) => <TurmaForm type={type} data={data} onSuccess={onSuccess} />, 
-  teacherAssignment: (type, data, onSuccess) => (
-    <TeacherAssignmentForm professorId={data.professor} onSuccess={onSuccess || (() => {})} />
-  ), // novo item para atribuição
+const forms: Record<
+  string,
+  (
+    type: "create" | "update",
+    data?: any,
+    onSuccess?: () => void,
+    onClose?: () => void
+  ) => JSX.Element
+> = {
+  teacher: (type, data, onSuccess) => <TeacherForm type={type} data={data} onSuccess={onSuccess} />,
+  student: (type, data, onSuccess) => <StudentForm type={type} data={data} onSuccess={onSuccess} />,
+  subject: (type, data, onSuccess) => <SubjectForm type={type} data={data} onSuccess={onSuccess} />,
+  class: (type, data, onSuccess) => <TurmaForm type={type} data={data} onSuccess={onSuccess} />,
+  teacherAssignment: (type, data, onSuccess, onClose) => (
+    <TeacherAssignmentForm
+      professorId={data.professor}
+      onSuccess={onSuccess || (() => {})}
+      onClose={onClose || (() => {})}
+    />
+  ),
 };
 
 // Map logical table names to real API endpoint names
@@ -40,7 +52,7 @@ const endpointMap: Record<string, string> = {
   event: "eventos",
   announcement: "avisos",
   parent: "pais",
-  ensino: "ensinos" // adiciona o endpoint de ensino
+  ensino: "ensinos",
 };
 
 const FormModal = ({
@@ -87,7 +99,6 @@ const FormModal = ({
     try {
       const token = localStorage.getItem("accessToken");
       const endpoint = endpointMap[table];
-
       if (!endpoint) throw new Error(`Endpoint não mapeado para: ${table}`);
 
       await axios.delete(`http://localhost:8000/api/${endpoint}/${id}/`, {
@@ -125,7 +136,7 @@ const FormModal = ({
         </button>
       </div>
     ) : type === "create" || type === "update" ? (
-      forms[table](type, data, onSuccess)
+      forms[table](type, data, onSuccess, () => setOpen(false))
     ) : (
       "Formulário não encontrado"
     );

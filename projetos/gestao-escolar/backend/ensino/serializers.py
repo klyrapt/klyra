@@ -44,5 +44,14 @@ class EnsinoSerializer(serializers.ModelSerializer):
 
         if data['turma'].instituicao != instituicao:
             raise serializers.ValidationError("Turma não pertence à sua instituição.")
+        
+         # impedi dois professores com a mesma disciplina na mesma turma
+        ensino_existente = Ensino.objects.filter(
+            disciplina=data['disciplina'],
+            turma=data['turma']
+        ).exclude(professor=data['professor'])  # ignora se for o mesmo professor
+
+        if ensino_existente.exists():
+            raise serializers.ValidationError("Essa disciplina já está atribuída a outro professor nessa turma.")
 
         return data
