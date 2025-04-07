@@ -71,3 +71,49 @@ class TurmaListCreateAPIView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+class TurmaDetailAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self, pk, user):
+        try:
+            instituicao = is_admin_da_escola(user)
+            turma = Turma.objects.get(pk=pk)
+
+            if turma.instituicao != instituicao:
+                return None
+            return turma
+        except Turma.DoesNotExist:
+            return None
+
+    def get(self, request, pk):
+        turma = self.get_object(pk, request.user)
+        if not turma:
+            return Response({"detail": "Turma não encontrada ou sem permissão."}, status=404)
+
+        serializer = TurmaSerializer(turma)
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        turma = self.get_object(pk, request.user)
+        if not turma:
+            return Response({"detail": "Turma não encontrada ou sem permissão."}, status=404)
+
+        data = request.data.copy()
+        serializer = TurmaSerializer(turma, data=data, context={"request": request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+
+    def delete(self, request, pk):
+        turma = self.get_object(pk, request.user)
+        if not turma:
+            return Response({"detail": "Turma não encontrada ou sem permissão."}, status=404)
+
+        turma.delete()
+        return Response(status=204)
