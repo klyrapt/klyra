@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import SuccessPopup from "@/components/SuccessPopup";
+import DeletePopup from "@/components/DeletePopup"; // usamos o DeletePopup aqui
 
 const schema = z.object({
   nome: z.string().min(2, "O nome é obrigatório"),
@@ -17,7 +17,17 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-const SubjectForm = ({ type, data }: { type: "create" | "update"; data?: any }) => {
+const SubjectForm = ({
+  type,
+  data,
+  onSuccess,
+  onClose, // novo
+}: {
+  type: "create" | "update";
+  data?: any;
+  onSuccess?: () => void;
+  onClose?: () => void;
+}) => {
   const {
     register,
     handleSubmit,
@@ -52,9 +62,11 @@ const SubjectForm = ({ type, data }: { type: "create" | "update"; data?: any }) 
 
       setTimeout(() => {
         setPopup(null);
-        window.location.reload();
-      }, 2500);
+        onSuccess?.();
+        onClose?.(); // Fecha o modal
+      }, 2000);
     } catch (error) {
+      console.error("Erro:", error);
       setPopup({ type: "error", message: "Erro ao salvar disciplina. Verifique os dados." });
       setTimeout(() => setPopup(null), 2500);
     }
@@ -62,10 +74,7 @@ const SubjectForm = ({ type, data }: { type: "create" | "update"; data?: any }) 
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="relative flex flex-col gap-4">
-      {popup && ( <SuccessPopup type={popup.type} message={popup.message} onClose={() => setPopup(null)}/>
-        )}
-
-
+      {popup && <DeletePopup type={popup.type} message={popup.message} />}
 
       <div>
         <label className="text-sm">Nome</label>
@@ -76,7 +85,9 @@ const SubjectForm = ({ type, data }: { type: "create" | "update"; data?: any }) 
       <div>
         <label className="text-sm">Carga horária</label>
         <Input {...register("carga_horaria")} placeholder="Ex: 40" type="number" />
-        {errors.carga_horaria && <p className="text-red-500 text-xs">{errors.carga_horaria.message}</p>}
+        {errors.carga_horaria && (
+          <p className="text-red-500 text-xs">{errors.carga_horaria.message}</p>
+        )}
       </div>
 
       <div>

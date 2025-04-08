@@ -23,7 +23,9 @@ const forms: Record<
     onClose?: () => void
   ) => JSX.Element
 > = {
-  teacher: (type, data, onSuccess) => <TeacherForm type={type} data={data} onSuccess={onSuccess} />,
+  teacher: (type, data, onSuccess, onClose) => (
+    <TeacherForm type={type} data={data} onSuccess={onSuccess} onClose={onClose} />
+  ),
   student: (type, data, onSuccess, onClose) => (
     <StudentForm type={type} data={data} onSuccess={onSuccess} onClose={onClose} />
   ),
@@ -41,6 +43,7 @@ const forms: Record<
     />
   ),
 };
+
 
 // Map logical table names to real API endpoint names
 const endpointMap: Record<string, string> = {
@@ -87,7 +90,7 @@ const FormModal = ({
     | "teacherAssignment";
   type: "create" | "update" | "delete";
   data?: any;
-  id?: number;
+  id?: number ;
   onSuccess?: () => void;
 }) => {
   const size = type === "create" ? "w-8 h-8" : "w-7 h-7";
@@ -127,26 +130,31 @@ const FormModal = ({
   };
 
   const Form = () => {
-    return type === "delete" && id ? (
-      <div className="p-4 flex flex-col gap-4 items-center justify-center text-center relative">
-        {popup && <DeletePopup type={popup.type} message={popup.message} />}
-        <span className="text-center font-medium">
-          Todos os dados serão perdidos. Tem certeza que deseja excluir?
-        </span>
-        <button
-          type="button"
-          onClick={handleDelete}
-          className="bg-red-700 text-white py-2 px-6 rounded-md hover:bg-red-800"
-        >
-          Deletar
-        </button>
-      </div>
-    ) : type === "create" || type === "update" ? (
-      forms[table](type, data, onSuccess, () => setOpen(false))
-    ) : (
-      "Formulário não encontrado"
-    );
+    if (type === "delete" && id) {
+      return (
+        <div className="p-4 flex flex-col gap-4 items-center justify-center text-center relative">
+          {popup && <DeletePopup type={popup.type} message={popup.message} />}
+          <span className="text-center font-medium">
+            Todos os dados serão perdidos. Tem certeza que deseja excluir?
+          </span>
+          <button
+            type="button"
+            onClick={handleDelete}
+            className="bg-red-700 text-white py-2 px-6 rounded-md hover:bg-red-800"
+          >
+            Deletar
+          </button>
+        </div>
+      );
+    }
+  
+    if ((type === "create" || type === "update") && typeof forms[table] === "function") {
+      return forms[table](type, data, onSuccess, () => setOpen(false));
+    }
+  
+    return <p>Formulário não encontrado.</p>;
   };
+  
 
   return (
     <>
