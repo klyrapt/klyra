@@ -35,7 +35,7 @@ class Aluno(models.Model):
     escola_anterior = models.CharField(max_length=255, blank=True)
     ano_concluido_anterior = models.CharField(max_length=10, blank=True)
 
-    foto_perfil = models.ImageField(upload_to='alunos/fotos/', blank=True, null=True)
+    foto_perfil = models.ImageField(upload_to='alunos/foto_perfil/', blank=True, null=True)
     pai_nome = models.CharField(max_length=255, blank=True)
     mae_nome = models.CharField(max_length=255, blank=True)
 

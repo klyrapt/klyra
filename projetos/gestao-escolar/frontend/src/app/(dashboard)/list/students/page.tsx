@@ -1,94 +1,120 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import axios from "axios";
+import Image from "next/image";
+import Link from "next/link";
 
 import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
-import TableSearch from "@/components/TableSearch";
-import { role, studentsData } from "@/lib/data";
-import Image from "next/image";
-import Link from "next/link";
+import AlunoTableSearch from "@/components/AlunoTableSearch";
 import { withAuth } from "@/lib/withAuth";
+import { BASE_URL } from "@/lib/constants";
+import { role } from "@/lib/data";
 
-
-type Student = {
+type Aluno = {
   id: number;
-  studentId: string;
-  name: string;
+  numero_aluno: string;
+  nome_completo: string;
   email?: string;
-  photo: string;
-  phone?: string;
-  grade: number;
-  class: string;
-  address: string;
+  telefone?: string;
+  endereco_completo?: string;
+  foto_perfil?: string;
 };
 
 const columns = [
-  {
-    header: "Info",
-    accessor: "info",
-  },
-  {
-    header: "Student ID",
-    accessor: "studentId",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Grade",
-    accessor: "grade",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Phone",
-    accessor: "phone",
-    className: "hidden lg:table-cell",
-  },
-  {
-    header: "Address",
-    accessor: "address",
-    className: "hidden lg:table-cell",
-  },
-  {
-    header: "Actions",
-    accessor: "action",
-  },
+  { header: "Info", accessor: "info" },
+  { header: "Nº Aluno", accessor: "numero_aluno", className: "hidden md:table-cell" },
+  { header: "Telefone", accessor: "telefone", className: "hidden md:table-cell" },
+  { header: "Endereço", accessor: "endereco_completo", className: "hidden lg:table-cell" },
+  { header: "Ações", accessor: "action" },
 ];
 
 const StudentListPage = () => {
-  const renderRow = (item: Student) => (
-    <tr
-      key={item.id}
-      className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
-    >
+  const [alunos, setAlunos] = useState<Aluno[]>([]);
+  const [count, setCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
+
+  const fetchAlunos = async (page = 1, search = "") => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const res = await axios.get("http://localhost:8000/api/alunos/", {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { page, search },
+      });
+      setAlunos(res.data.results);
+      setCount(res.data.count);
+      setCurrentPage(page);
+    } catch (err) {
+      console.error("Erro ao buscar alunos:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAlunos();
+  }, []);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    if (searchTimeout) clearTimeout(searchTimeout);
+    const timeout = setTimeout(() => fetchAlunos(1, value), 500);
+    setSearchTimeout(timeout);
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      if (searchTimeout) clearTimeout(searchTimeout);
+      fetchAlunos(1, searchTerm);
+    }
+  };
+
+  const renderRow = (item: Aluno) => (
+    <tr key={item.id} className="border-b even:bg-slate-50 text-sm hover:bg-lamaPurpleLight">
       <td className="flex items-center gap-4 p-4">
-        <Image
-          src={item.photo}
-          alt=""
-          width={40}
-          height={40}
-          className="md:hidden xl:block w-10 h-10 rounded-full object-cover"
-        />
+        {item.foto_perfil ? (
+          <Image
+            src={item.foto_perfil.startsWith("http") ? item.foto_perfil : `${BASE_URL}${item.foto_perfil}`}
+            alt="Foto do aluno"
+            width={40}
+            height={40}
+            className="w-10 h-10 rounded-full object-cover"
+          />
+        ) : (
+          <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-xs text-white">
+            N/A
+          </div>
+        )}
         <div className="flex flex-col">
-          <h3 className="font-semibold">{item.name}</h3>
-          <p className="text-xs text-gray-500">{item.class}</p>
+          <h3 className="font-semibold">{item.nome_completo}</h3>
+          <p className="text-xs text-gray-500">{item.email || "Sem email"}</p>
         </div>
       </td>
-      <td className="hidden md:table-cell">{item.studentId}</td>
-      <td className="hidden md:table-cell">{item.grade}</td>
-      <td className="hidden md:table-cell">{item.phone}</td>
-      <td className="hidden md:table-cell">{item.address}</td>
+
+
+
+
+      <td className="hidden md:table-cell">{item.numero_aluno}</td>
+      <td className="hidden md:table-cell">{item.telefone || "-"}</td>
+      <td className="hidden lg:table-cell">{item.endereco_completo || "-"}</td>
       <td>
-        <div className="flex items-center gap-2">
-          <Link href={`/list/teachers/${item.id}`}>
+        <div className="flex gap-2">
+          <Link href={`/list/students/${item.id}`}>
             <button className="w-7 h-7 flex items-center justify-center rounded-full bg-lamaSky">
-              <Image src="/view.png" alt="" width={16} height={16} />
+              <Image src="/view.png" alt="ver" width={16} height={16} />
             </button>
           </Link>
           {role === "admin" && (
-            // <button className="w-7 h-7 flex items-center justify-center rounded-full bg-lamaPurple">
-            //   <Image src="/delete.png" alt="" width={16} height={16} />
-            // </button>
-            <FormModal table="student" type="delete" id={item.id}/>
+            <>
+              <FormModal table="student" type="update" data={item} onSuccess={() => fetchAlunos(currentPage, searchTerm)} />
+              <FormModal table="student" type="delete" id={item.id} onSuccess={() => fetchAlunos(currentPage, searchTerm)} />
+            </>
           )}
         </div>
       </td>
@@ -97,33 +123,43 @@ const StudentListPage = () => {
 
   return (
     <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
-      {/* TOP */}
       <div className="flex items-center justify-between">
-        <h1 className="hidden md:block text-lg font-semibold">All Students</h1>
+        <h1 className="text-lg font-semibold">Todos os Alunos</h1>
         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-          <TableSearch />
+          <AlunoTableSearch
+            value={searchTerm}
+            onChange={handleSearchChange}
+            onKeyDown={handleSearchKeyDown}
+          />
           <div className="flex items-center gap-4 self-end">
             <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
-              <Image src="/filter.png" alt="" width={14} height={14} />
+              <Image src="/filter.png" alt="Filtro" width={14} height={14} />
             </button>
             <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
-              <Image src="/sort.png" alt="" width={14} height={14} />
+              <Image src="/sort.png" alt="Ordenar" width={14} height={14} />
             </button>
             {role === "admin" && (
-              // <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
-              //   <Image src="/plus.png" alt="" width={14} height={14} />
-              // </button>
-              <FormModal table="student" type="create"/>
+              <FormModal table="student" type="create" onSuccess={() => fetchAlunos(currentPage, searchTerm)} />
             )}
           </div>
         </div>
       </div>
-      {/* LIST */}
-      <Table columns={columns} renderRow={renderRow} data={studentsData} />
-      {/* PAGINATION */}
-      <Pagination />
+
+      {loading ? (
+        <p className="text-center py-10">Carregando alunos...</p>
+      ) : (
+        <>
+          <Table columns={columns} renderRow={renderRow} data={alunos} />
+          <Pagination
+            currentPage={currentPage}
+            totalItems={count}
+            pageSize={10}
+            onPageChange={(page) => fetchAlunos(page, searchTerm)}
+          />
+        </>
+      )}
     </div>
   );
 };
 
-export default  withAuth(StudentListPage);
+export default withAuth(StudentListPage);

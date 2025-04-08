@@ -129,32 +129,32 @@ const FormModal = ({
     }
   };
 
-  const Form = () => {
-    if (type === "delete" && id) {
-      return (
-        <div className="p-4 flex flex-col gap-4 items-center justify-center text-center relative">
-          {popup && <DeletePopup type={popup.type} message={popup.message} />}
-          <span className="text-center font-medium">
-            Todos os dados serão perdidos. Tem certeza que deseja excluir?
-          </span>
-          <button
-            type="button"
-            onClick={handleDelete}
-            className="bg-red-700 text-white py-2 px-6 rounded-md hover:bg-red-800"
-          >
-            Deletar
-          </button>
-        </div>
-      );
-    }
-  
-    if ((type === "create" || type === "update") && typeof forms[table] === "function") {
-      return forms[table](type, data, onSuccess, () => setOpen(false));
-    }
-  
-    return <p>Formulário não encontrado.</p>;
-  };
-  
+const Form = () => {
+  if (type === "delete" && id) {
+    return (
+      <div className="p-4 flex flex-col gap-4 items-center justify-center text-center relative">
+        {popup && <DeletePopup type={popup.type} message={popup.message} />}
+        <span className="text-center font-medium">
+          Todos os dados serão perdidos. Tem certeza que deseja excluir?
+        </span>
+        <button
+          type="button"
+          onClick={handleDelete}
+          className="bg-red-700 text-white py-2 px-6 rounded-md hover:bg-red-800"
+        >
+          Deletar
+        </button>
+      </div>
+    );
+  }
+
+  if ((type === "create" || type === "update") && typeof forms[table] === "function") {
+    return forms[table](type, data, onSuccess, () => setOpen(false));
+  }
+
+  return <p>Formulário não encontrado.</p>;
+};
+
 
   return (
     <>
@@ -166,7 +166,9 @@ const FormModal = ({
       </button>
       {open && (
         <div className="w-screen h-screen fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center">
-          <div className="bg-white p-4 rounded-md relative w-[90%] md:w-[70%] lg:w-[50%] xl:w-[40%]">
+         <div className="bg-white p-4 rounded-md relative w-full max-w-4xl mx-auto overflow-y-auto max-h-[90vh]">
+
+
             <Form />
             <div
               className="absolute top-4 right-4 cursor-pointer"
