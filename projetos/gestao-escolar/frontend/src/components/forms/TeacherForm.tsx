@@ -35,10 +35,13 @@ const TeacherForm = ({
   type,
   data,
   onSuccess,
+  onClose
+  
 }: {
   type: "create" | "update";
   data?: any;
   onSuccess?: () => void;
+  onClose?: () => void;
 }) => {
   const {
     register,
@@ -60,12 +63,17 @@ const TeacherForm = ({
       delete copy.id;
       delete copy.foto;
       reset(copy);
+  
       if (data.foto) {
-        setPreviewUrl(`http://localhost:8000${data.foto}`);
+        setPreviewUrl(
+          data.foto.startsWith("http")
+            ? data.foto
+            : `http://localhost:8000${data.foto}`
+        );
       }
     }
   }, [type, data, reset]);
-
+  
   const onSubmit = async (values: Inputs) => {
     try {
       const token = Cookies.get("accessToken");
@@ -104,6 +112,7 @@ const TeacherForm = ({
       setTimeout(() => {
         setStatusMsg(null);
         onSuccess?.();
+        onClose?.();
         reset();
         setFotoFile(null);
         setPreviewUrl(null);
