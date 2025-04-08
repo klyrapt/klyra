@@ -1,165 +1,234 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import InputField from "../InputField";
-import Image from "next/image";
+import { zodResolver } from "@hookform/resolvers/zod";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import Cookies from "js-cookie";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import DeletePopup from "@/components/DeletePopup";
 
 const schema = z.object({
-  username: z
-    .string()
-    .min(3, { message: "Username must be at least 3 characters long!" })
-    .max(20, { message: "Username must be at most 20 characters long!" }),
-  email: z.string().email({ message: "Invalid email address!" }),
-  password: z
-    .string()
-    .min(8, { message: "Password must be at least 8 characters long!" }),
-  firstName: z.string().min(1, { message: "First name is required!" }),
-  lastName: z.string().min(1, { message: "Last name is required!" }),
-  phone: z.string().min(1, { message: "Phone is required!" }),
-  address: z.string().min(1, { message: "Address is required!" }),
-  bloodType: z.string().min(1, { message: "Blood Type is required!" }),
-  birthday: z.date({ message: "Birthday is required!" }),
-  sex: z.enum(["male", "female"], { message: "Sex is required!" }),
-  img: z.instanceof(File, { message: "Image is required" }),
+  nome_completo: z.string().min(1, { message: "Nome obrigatório" }),
+  email: z.string().email({ message: "Email inválido" }),
+  telefone: z.string().optional(),
+  data_nascimento: z.string().optional(),
+  genero: z.enum(["M", "F", "O"]).optional(),
+  nacionalidade: z.string().optional(),
+  naturalidade: z.string().optional(),
+
+  documento_identidade: z.string().optional(),
+  numero_documento: z.string().optional(),
+  data_emissao_documento: z.string().optional(),
+  local_emissao_documento: z.string().optional(),
+
+  endereco_completo: z.string().optional(),
+  bairro: z.string().optional(),
+  cidade: z.string().optional(),
+  codigo_postal: z.string().optional(),
+
+  tem_alguma_deficiencia: z.boolean().optional(),
+  descricao_deficiencia: z.string().optional(),
+
+  alergias: z.string().optional(),
+  plano_saude: z.string().optional(),
+
+  situacao_escolar_anterior: z.string().optional(),
+  escola_anterior: z.string().optional(),
+  ano_concluido_anterior: z.string().optional(),
+
+  pai_nome: z.string().optional(),
+  mae_nome: z.string().optional(),
+});
+
+schema.superRefine((data, ctx) => {
+  if (data.tem_alguma_deficiencia && !data.descricao_deficiencia?.trim()) {
+    ctx.addIssue({
+      path: ["descricao_deficiencia"],
+      message: "Descrição obrigatória.",
+      code: z.ZodIssueCode.custom,
+    });
+  }
 });
 
 type Inputs = z.infer<typeof schema>;
 
-const StudentForm = ({
+export default function StudentForm({
   type,
   data,
+  onSuccess,
+  onClose,
 }: {
   type: "create" | "update";
   data?: any;
-}) => {
+  onSuccess?: () => void;
+  onClose?: () => void;
+}) {
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors },
-  } = useForm<Inputs>({
-    resolver: zodResolver(schema),
-  });
+  } = useForm<Inputs>({ resolver: zodResolver(schema) });
 
-  const onSubmit = handleSubmit((data) => {
-    console.log(data);
-  });
+  const [popup, setPopup] = useState<null | { type: "success" | "error"; message: string }>(null);
+  const [fotoFile, setFotoFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  const temDeficiencia = watch("tem_alguma_deficiencia");
+
+  useEffect(() => {
+    if (data) {
+      Object.entries(data).forEach(([key, value]) => {
+        setValue(key as keyof Inputs, value as string | boolean | undefined);
+      });
+      if (data.foto_perfil) {
+        setPreviewUrl(data.foto_perfil.startsWith("http") ? data.foto_perfil : `http://localhost:8000${data.foto_perfil}`);
+      }
+    }
+  }, [data, setValue]);
+
+  const onSubmit = async (values: Inputs) => {
+    try {
+      const token = Cookies.get("accessToken");
+      const url =
+        type === "create"
+          ? "http://localhost:8000/api/alunos/"
+          : `http://localhost:8000/api/alunos/${data.id}/`;
+
+      const method = type === "create" ? "post" : "put";
+      const formData = new FormData();
+      Object.entries(values).forEach(([key, value]) => {
+        formData.append(key, typeof value === "boolean" ? String(value) : value ?? "");
+      });
+      if (fotoFile) formData.append("foto_perfil", fotoFile);
+
+      await axios({
+        method,
+        url,
+        data: formData,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      setPopup({ type: "success", message: type === "create" ? "Aluno criado!" : "Aluno atualizado!" });
+      setTimeout(() => {
+        setPopup(null);
+        onSuccess?.();
+        onClose?.();
+      }, 2000);
+    } catch (err) {
+      console.error(err);
+      setPopup({ type: "error", message: "Erro ao salvar aluno." });
+      setTimeout(() => setPopup(null), 2500);
+    }
+  };
 
   return (
-    <form className="flex flex-col gap-8" onSubmit={onSubmit}>
-      <h1 className="text-xl font-semibold">Create a new student</h1>
-      <span className="text-xs text-gray-400 font-medium">
-        Authentication Information
-      </span>
-      <div className="flex justify-between flex-wrap gap-4">
-        <InputField
-          label="Username"
-          name="username"
-          defaultValue={data?.username}
-          register={register}
-          error={errors?.username}
-        />
-        <InputField
-          label="Email"
-          name="email"
-          defaultValue={data?.email}
-          register={register}
-          error={errors?.email}
-        />
-        <InputField
-          label="Password"
-          name="password"
-          type="password"
-          defaultValue={data?.password}
-          register={register}
-          error={errors?.password}
-        />
-      </div>
-      <span className="text-xs text-gray-400 font-medium">
-        Personal Information
-      </span>
-      <div className="flex justify-between flex-wrap gap-4">
-        <InputField
-          label="First Name"
-          name="firstName"
-          defaultValue={data?.firstName}
-          register={register}
-          error={errors.firstName}
-        />
-        <InputField
-          label="Last Name"
-          name="lastName"
-          defaultValue={data?.lastName}
-          register={register}
-          error={errors.lastName}
-        />
-        <InputField
-          label="Phone"
-          name="phone"
-          defaultValue={data?.phone}
-          register={register}
-          error={errors.phone}
-        />
-        <InputField
-          label="Address"
-          name="address"
-          defaultValue={data?.address}
-          register={register}
-          error={errors.address}
-        />
-        <InputField
-          label="Blood Type"
-          name="bloodType"
-          defaultValue={data?.bloodType}
-          register={register}
-          error={errors.bloodType}
-        />
-        <InputField
-          label="Birthday"
-          name="birthday"
-          defaultValue={data?.birthday}
-          register={register}
-          error={errors.birthday}
-          type="date"
-        />
-        <div className="flex flex-col gap-2 w-full md:w-1/4">
-          <label className="text-xs text-gray-500">Sex</label>
-          <select
-            className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
-            {...register("sex")}
-            defaultValue={data?.sex}
-          >
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-          </select>
-          {errors.sex?.message && (
-            <p className="text-xs text-red-400">
-              {errors.sex.message.toString()}
-            </p>
-          )}
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-h-[75vh] overflow-y-auto p-2">
+      {popup && <DeletePopup type={popup.type} message={popup.message} />}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Field label="Nome Completo" error={errors.nome_completo?.message}><Input {...register("nome_completo")} /></Field>
+        <Field label="Email" error={errors.email?.message}><Input {...register("email")} /></Field>
+        <Field label="Telefone"><Input {...register("telefone")} /></Field>
+        <Field label="Data de Nascimento"><Input type="date" {...register("data_nascimento")} /></Field>
+        <Field label="Nacionalidade"><Input {...register("nacionalidade")} /></Field>
+        <Field label="Naturalidade"><Input {...register("naturalidade")} /></Field>
+
+        <Field label="Gênero">
+          <Select onValueChange={(v) => setValue("genero", v as "M" | "F" | "O")}>
+            <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="M">Masculino</SelectItem>
+              <SelectItem value="F">Feminino</SelectItem>
+              <SelectItem value="O">Outro</SelectItem>
+            </SelectContent>
+          </Select>
+        </Field>
+
+        <Field label="Endereço"><Textarea {...register("endereco_completo")} /></Field>
+        <Field label="Bairro"><Input {...register("bairro")} /></Field>
+        <Field label="Cidade"><Input {...register("cidade")} /></Field>
+        <Field label="Código Postal"><Input {...register("codigo_postal")} /></Field>
+
+        <Field label="Documento de Identidade"><Input {...register("documento_identidade")} /></Field>
+        <Field label="Número do Documento"><Input {...register("numero_documento")} /></Field>
+        <Field label="Data de Emissão"><Input type="date" {...register("data_emissao_documento")} /></Field>
+        <Field label="Local de Emissão"><Input {...register("local_emissao_documento")} /></Field>
+
+        <div className="col-span-full flex items-center gap-2">
+          <Checkbox id="tem_alguma_deficiencia" checked={temDeficiencia} onCheckedChange={(v) => setValue("tem_alguma_deficiencia", Boolean(v))} />
+          <Label htmlFor="tem_alguma_deficiencia">Tem alguma deficiência?</Label>
         </div>
-        <div className="flex flex-col gap-2 w-full md:w-1/4 justify-center">
-          <label
-            className="text-xs text-gray-500 flex items-center gap-2 cursor-pointer"
-            htmlFor="img"
-          >
-            <Image src="/upload.png" alt="" width={28} height={28} />
-            <span>Upload a photo</span>
-          </label>
-          <input type="file" id="img" {...register("img")} className="hidden" />
-          {errors.img?.message && (
-            <p className="text-xs text-red-400">
-              {errors.img.message.toString()}
-            </p>
-          )}
+
+        {temDeficiencia && (
+          <Field label="Descrição da Deficiência" error={errors.descricao_deficiencia?.message}>
+            <Textarea {...register("descricao_deficiencia")} />
+          </Field>
+        )}
+
+        <Field label="Alergias"><Input {...register("alergias")} /></Field>
+        <Field label="Plano de Saúde"><Input {...register("plano_saude")} /></Field>
+        <Field label="Situação Escolar Anterior"><Input {...register("situacao_escolar_anterior")} /></Field>
+        <Field label="Escola Anterior"><Input {...register("escola_anterior")} /></Field>
+        <Field label="Ano Concluído"><Input {...register("ano_concluido_anterior")} /></Field>
+        <Field label="Nome do Pai"><Input {...register("pai_nome")} /></Field>
+        <Field label="Nome da Mãe"><Input {...register("mae_nome")} /></Field>
+
+        <div className="col-span-full">
+          <Label className="text-sm text-gray-700">Foto do Aluno</Label>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-2">
+            <label htmlFor="foto_perfil" className="cursor-pointer text-blue-600 hover:underline text-sm">
+              Selecionar Imagem
+            </label>
+            <input
+              type="file"
+              id="foto_perfil"
+              className="hidden"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0] || null;
+                setFotoFile(file);
+                if (file) {
+                  const url = URL.createObjectURL(file);
+                  setPreviewUrl(url);
+                }
+              }}
+            />
+            {previewUrl && <img src={previewUrl} alt="Preview" className="w-24 h-24 rounded-md object-cover ring-2 ring-lamaSky" />}
+          </div>
         </div>
       </div>
-      <button className="bg-blue-400 text-white p-2 rounded-md">
-        {type === "create" ? "Create" : "Update"}
-      </button>
+
+      <Button type="submit" className="w-full bg-sky-500 text-white">
+        {type === "create" ? "Cadastrar Aluno" : "Atualizar Aluno"}
+      </Button>
     </form>
   );
-};
+}
 
-export default StudentForm;
+function Field({ label, children, error }: { label: string; children: React.ReactNode; error?: string }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <Label className="text-sm text-gray-700">{label}</Label>
+      {children}
+      {error && <p className="text-red-500 text-sm">{error}</p>}
+    </div>
+  );
+}
