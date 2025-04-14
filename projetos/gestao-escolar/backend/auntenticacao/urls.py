@@ -3,7 +3,7 @@ from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .views import PasswordResetRequestView, PasswordResetConfirmView,ChangePasswordView
 
-from .views import CustomTokenBlacklistView
+from .views import CustomTokenBlacklistView, VerificarTokenView
 
 
 urlpatterns = [
@@ -14,4 +14,6 @@ urlpatterns = [
     path("password-reset/", PasswordResetRequestView.as_view(), name="password-reset"),
     path("password-reset/<int:user_id>/<token>/", PasswordResetConfirmView.as_view(), name="password-reset-confirm"),
     path("change-password/", ChangePasswordView.as_view(), name="change-password"),
+    path("verificar-token/", VerificarTokenView.as_view(), name="verificar-token"),
+
 ]

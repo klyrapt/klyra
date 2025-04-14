@@ -18,7 +18,7 @@ class TurmaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Turma
         fields = "__all__"
-        read_only_fields = []
+        read_only_fields = ["codigo"]
 
     def get_diretor_turma_nome(self, instance):
         if instance.diretor_turma and instance.diretor_turma.usuario:
@@ -68,6 +68,7 @@ class TurmaSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         user = self.context["request"].user
+        validated_data.pop("codigo", None) 
         try:
             instituicao = Instituicao.objects.get(admin=user)
         except Instituicao.DoesNotExist:

@@ -106,3 +106,17 @@ class InstituicaoCreateSerializer(serializers.ModelSerializer):
         except Exception as e:
             print(f"Erro ao enviar e-mail: {e}")
        
+
+
+
+
+class InstituicaoUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Instituicao
+        fields = ['nome', 'email', 'telefone', 'endereco', 'logo', 'plano']
+
+
+class InstituicaoDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Instituicao
+        fields = ['nome', 'email', 'telefone', 'endereco', 'logo', 'plano']

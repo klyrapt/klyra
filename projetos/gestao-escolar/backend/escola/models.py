@@ -6,14 +6,24 @@ from django.utils import timezone
 
 from planos.models import Plano
 
+
+
+from uuid import uuid4
+
+
+def get_unique_filename(instance, filename):
+    return f"logo/{uuid4()}-{filename}"
+
+
 class Instituicao(models.Model):
     nome = models.CharField(max_length=255)
     endereco = models.TextField(blank=True)
     email = models.EmailField(blank=True)
     telefone = models.CharField(max_length=20, blank=True)
-    logo = models.ImageField(upload_to='logos/', blank=True, null=True)
+    logo = models.ImageField(upload_to=get_unique_filename, blank=True, null=True)
     plano = models.ForeignKey(Plano, on_delete=models.SET_NULL, null=True)
     inicio_teste = models.DateField(null=True, blank=True)
+
 
     admin = models.ForeignKey(
         settings.AUTH_USER_MODEL,

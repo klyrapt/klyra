@@ -1,0 +1,47 @@
+# ====== BACKEND (Django) ======
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+db.sqlite3
+*.sqlite3
+*.log
+
+# Virtualenv
+venv/
+env/
+ENV/
+.venv/
+.Python
+
+# Configurações locais e segredos
+.env
+.env.*
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Django migrations (opcional, se gerar dinamicamente)
+**/migrations/
+!**/migrations/__init__.py
+
+# ====== FRONTEND (React/Next.js, etc) ======
+node_modules/
+.next/
+dist/
+build/
+out/
+.cache/
+*.log
+
+# Arquivos temporários e do sistema operacional
+.DS_Store
+Thumbs.db
+
+# VSCode
+.vscode/
+
+# JetBrains (PyCharm, WebStorm, etc)
+.idea/

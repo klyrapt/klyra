@@ -3,6 +3,12 @@ from core.models import User
 from escola.models import Instituicao
 
 
+from uuid import uuid4
+
+
+def get_unique_filename(instance, filename):
+    return f"foto/{uuid4()}-{filename}"
+
 class Professor(models.Model):
     usuario = models.OneToOneField(User, on_delete=models.CASCADE, limit_choices_to={"tipo": "professor"})
     instituicao = models.ForeignKey(Instituicao, on_delete=models.CASCADE, related_name="professores")
@@ -11,7 +17,7 @@ class Professor(models.Model):
     especializacao = models.CharField(max_length=150, blank=True)
     biografia = models.TextField(blank=True, null=True)
 
-    foto = models.ImageField(upload_to="professores/fotos", blank=True, null=True)
+    foto = models.ImageField(upload_to=get_unique_filename, blank=True, null=True)
 
     telefone = models.CharField(max_length=20, blank=True)
     data_nascimento = models.DateField(null=True, blank=True)

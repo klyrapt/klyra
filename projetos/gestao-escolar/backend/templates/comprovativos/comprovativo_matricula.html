@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprovativo de Matrícula</title>
+    
+    <style>
+        /* Estilos otimizados para PDF */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f1f5f9;
+            color: #1e293b;
+            line-height: 1.5;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 0;
+            position: relative;
+        }
+        
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            font-size: 80px;
+            font-weight: bold;
+            color: rgba(0, 0, 0, 0.05);
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .header {
+            background-color: #2563eb;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-info h1 {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .header-info p {
+            font-size: 13px;
+            margin: 2px 0;
+            opacity: 0.9;
+        }
+        
+        .logo-container {
+            background-color: white;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .logo {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+        }
+        
+        .title-section {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #e2e8f0;
+            margin: 0 20px;
+        }
+        
+        .title-section h2 {
+            font-size: 20px;
+            color: #2563eb;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .title-section p {
+            font-size: 14px;
+            color: #475569;
+            margin-top: 8px;
+        }
+        
+        .content {
+            padding: 20px;
+        }
+        
+        .section {
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #2563eb;
+            margin-bottom: 12px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #dbeafe;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title::before {
+            content: "";
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background-color: #2563eb;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .info-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .info-item {
+            flex: 1 1 200px;
+            margin-bottom: 10px;
+        }
+        
+        .info-label {
+            font-size: 12px;
+            color: #475569;
+            margin-bottom: 3px;
+        }
+        
+        .info-value {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1e293b;
+        }
+        
+        .payment-box {
+            background-color: #dbeafe;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .payment-amount {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2563eb;
+        }
+        
+        .payment-label {
+            font-size: 13px;
+            color: #475569;
+        }
+        
+        .payment-status {
+            background-color: #10b981;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .observations {
+            background-color: #fef9c3;
+            border-left: 4px solid #f59e0b;
+            padding: 12px;
+            border-radius: 0 6px 6px 0;
+            margin-top: 8px;
+            font-size: 13px;
+        }
+        
+        .signatures {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 15px;
+        }
+        
+        .signature {
+            width: 45%;
+            text-align: center;
+        }
+        
+        .signature-line {
+            border-top: 1px solid #1e293b;
+            margin: 0 auto 10px;
+            width: 80%;
+        }
+        
+        .signature-name {
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .signature-title {
+            font-size: 11px;
+            color: #475569;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 15px;
+            background-color: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            font-size: 12px;
+            color: #475569;
+        }
+        
+        .verification-code {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+        
+        .code {
+            font-family: monospace;
+            background-color: #f8fafc;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="watermark">VERIFICADO</div>
+        <header class="header">
+            <div class="header-info">
+                <h1>{{ instituicao.nome }}</h1>
+                <p>{{ instituicao.endereco }}</p>
+                <p>{{ instituicao.email }} | {{ instituicao.telefone }}</p>
+            </div>
+            <div class="logo-container">
+                {% if logo_base64 %}
+                    <img src="{{ logo_base64 }}" alt="Logo" class="logo">
+                {% else %}
+                    <h1 style="font-size: 14px;">LOGO</h1>
+                {% endif %}
+            </div>
+        </header>
+
+        <div class="title-section">
+            <h2>Comprovativo de Matrícula</h2>
+            <p>Nº {{ numero_comprovativo }} • Ano Letivo {{ ano_letivo }}</p>
+        </div>
+
+        <div class="content">
+            <section class="section">
+                <h3 class="section-title">Dados do Aluno</h3>
+                <div class="info-grid">
+                    <div class="info-item"><div class="info-label">Nome Completo</div><div class="info-value">{{ aluno.nome_completo }}</div></div>
+                    <div class="info-item"><div class="info-label">Número de Aluno</div><div class="info-value">{{ matricula.numero_matricula }}</div></div>
+                    <div class="info-item"><div class="info-label">Documento de Identificação</div><div class="info-value">{{ aluno.numero_documento }}</div></div>
+                    <div class="info-item"><div class="info-label">Data de Nascimento</div><div class="info-value">{{ aluno.data_nascimento|date:"d/m/Y" }}</div></div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h3 class="section-title">Dados da Matrícula</h3>
+                <div class="info-grid">
+                    <div class="info-item"><div class="info-label">Curso</div><div class="info-value">{{ curso }}</div></div>
+                    <div class="info-item"><div class="info-label">Turma</div><div class="info-value">{{ turma }}</div></div>
+                    <div class="info-item"><div class="info-label">Nível</div><div class="info-value">{{ matricula.turma.nivel.nome }}</div></div>
+                    <div class="info-item"><div class="info-label">Data da Matrícula</div><div class="info-value">{{ data_matricula }}</div></div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h3 class="section-title">Pagamento</h3>
+                <div class="payment-box">
+                    <div>
+                        <div class="payment-label">Valor Pago</div>
+                        <div class="payment-amount">€ {{ valor|floatformat:2 }}</div>
+                    </div>
+                    <div class="payment-status">CONFIRMADO</div>
+                </div>
+                <div class="info-item" style="margin-top: 12px;">
+                    <div class="info-label">Descrição</div>
+                    <div class="info-value">Matrícula e propinas iniciais referentes ao ano letivo {{ ano_letivo }}</div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h3 class="section-title">Encarregado de Educação</h3>
+                <div class="info-grid">
+                    <div class="info-item"><div class="info-label">Nome</div><div class="info-value">{{ responsavel_nome }}</div></div>
+                    <div class="info-item"><div class="info-label">Contacto</div><div class="info-value">{{ responsavel_telefone }}</div></div>
+                    <div class="info-item"><div class="info-label">Email</div><div class="info-value">{{ responsavel_email }}</div></div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h3 class="section-title">Observações</h3>
+                <div class="observations">
+                    <p>Este documento comprova a matrícula do(a) aluno(a) no {{ instituicao.nome }} para o ano letivo {{ ano_letivo }}. A matrícula está confirmada e regularizada.</p>
+                </div>
+            </section>
+
+            <div class="signatures">
+                <div class="signature">
+                    <div class="signature-line"></div>
+                    <div class="signature-name">{{ responsavel_nome }}</div>
+                    <div class="signature-title">Encarregado de Educação</div>
+                </div>
+                <div class="signature">
+                    <div class="signature-line"></div>
+                    <div class="signature-name">Secretaria Académica</div>
+                    <div class="signature-title">{{ instituicao.nome }}</div>
+                </div>
+            </div>
+
+            <div class="verification-code">
+                <p>Código de Verificação: <span class="code">{{ codigo_verificacao }}</span></p>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>Documento emitido eletronicamente em {{ data_emissao }}</p>
+            <p>{{ instituicao.nome }} • Sistema de Gestão Académica</p>
+        </footer>
+    </div>
+</body>
+</html>

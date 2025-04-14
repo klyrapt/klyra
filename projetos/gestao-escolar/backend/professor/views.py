@@ -1,19 +1,19 @@
-from rest_framework.generics import ListCreateAPIView
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.filters import SearchFilter
+from rest_framework import viewsets, status
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.pagination import PageNumberPagination
 from django.utils.crypto import get_random_string
 from django.core.mail import send_mail
 from django.conf import settings
-from rest_framework.views import APIView
 
 from core.models import User
 from professor.models import Professor
 from professor.serializers import ProfessorSerializer
 from escola.models import Instituicao
 
+from rest_framework.views import APIView
 
 # Paginação padrão
 class PaginacaoPadrao(PageNumberPagination):
@@ -21,26 +21,27 @@ class PaginacaoPadrao(PageNumberPagination):
     page_size_query_param = "page_size"
     max_page_size = 100
 
-
 def get_instituicao_do_admin(user):
     return Instituicao.objects.filter(admin=user).first()
 
-
-class ProfessorListCreateAPIView(ListCreateAPIView):
+class ProfessorViewSet(viewsets.ModelViewSet):
     serializer_class = ProfessorSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = PaginacaoPadrao
-    filter_backends = [SearchFilter]
-    search_fields = ['usuario__nome', 'usuario__email']
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    
+    filterset_fields = ["instituicao"]
+    search_fields = ["usuario__nome", "usuario__email", "telefone"]
+    ordering = ["usuario__nome"]
 
     def get_queryset(self):
         instituicao = get_instituicao_do_admin(self.request.user)
         return Professor.objects.filter(instituicao=instituicao)
 
-    def post(self, request):
+    def create(self, request, *args, **kwargs):
         instituicao = get_instituicao_do_admin(request.user)
         if not instituicao:
-            return Response({"detail": "Apenas administradores de instituição podem adicionar professores."},
+            return Response({"detail": "Apenas administradores podem adicionar professores."},
                             status=status.HTTP_403_FORBIDDEN)
 
         nome = request.data.get("nome")
@@ -93,12 +94,40 @@ class ProfessorListCreateAPIView(ListCreateAPIView):
             "professor_id": professor.id
         }, status=status.HTTP_201_CREATED)
 
+    def update(self, request, *args, **kwargs):
+        professor = self.get_object()
+        if not self._has_permission(request.user, professor):
+            return Response({"detail": "Sem permissão para atualizar este professor."},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        serializer = self.get_serializer(professor, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+        professor = self.get_object()
+        if not self._has_permission(request.user, professor):
+            return Response({"detail": "Sem permissão para deletar este professor."},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        professor.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def _has_permission(self, user, professor):
+        if user.tipo == "admin":
+            return get_instituicao_do_admin(user) == professor.instituicao
+        elif user.tipo == "professor":
+            return professor.usuario == user
+        return False
 
 
 
 
 
-class ProfessorDetailAPIView(APIView):
+
+
+class ProfessorDetailAPIView(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_object(self, pk):

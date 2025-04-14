@@ -1,105 +1,196 @@
-// components/AnimatedResources.tsx
-
 "use client"
 
+import { useState } from "react"
 import { motion } from "framer-motion"
-import { useEffect, useRef, useState } from "react"
-import {
-  Calendar,
-  Clock,
-  FileText,
-  LayoutDashboard,
-  MessageSquare,
-  ShieldCheck,
-  Users,
-  GraduationCap,
-  BarChart,
-  BookOpenCheck
-} from "lucide-react"
+import { Users, BookOpen, MessageSquare, CreditCard } from "lucide-react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import Image from "next/image"
 
-const recursos = [
-  { icon: LayoutDashboard, label: "Painel Inteligente" },
-  { icon: Users, label: "Gestão de Alunos" },
-  { icon: FileText, label: "Boletins e Avaliações" },
-  { icon: Calendar, label: "Calendário Escolar" },
-  { icon: Clock, label: "Frequência e Presenças" },
-  { icon: MessageSquare, label: "Mensagens Diretas" },
-  { icon: ShieldCheck, label: "Controle de Acesso" },
-  { icon: GraduationCap, label: "Plano de Ensino" },
-  { icon: BarChart, label: "Relatórios Avançados" },
-  { icon: BookOpenCheck, label: "Materiais Didáticos" },
+const resources = [
+  {
+    id: "academico",
+    name: "Acadêmico",
+    icon: BookOpen,
+    color: "blue",
+    description: "Gestão completa do processo acadêmico, desde o planejamento até a avaliação.",
+    features: [
+      "Lançamento de notas e frequência",
+      "Geração de boletins e históricos",
+      "Planejamento de aulas",
+      "Avaliações online",
+      "Biblioteca digital",
+      "Atividades e tarefas",
+    ],
+    image: "/placeholder.svg?height=300&width=500",
+  },
+  {
+    id: "administrativo",
+    name: "Administrativo",
+    icon: Users,
+    color: "yellow",
+    description: "Controle eficiente de matrículas, turmas e toda a estrutura escolar.",
+    features: [
+      "Gestão de matrículas e rematrículas",
+      "Controle de turmas e horários",
+      "Cadastro de professores e funcionários",
+      "Gestão de salas e recursos",
+      "Controle de documentos",
+      "Relatórios gerenciais",
+    ],
+    image: "/placeholder.svg?height=300&width=500",
+  },
+  {
+    id: "financeiro",
+    name: "Financeiro",
+    icon: CreditCard,
+    color: "green",
+    description: "Administração completa das finanças da sua instituição de ensino.",
+    features: [
+      "Controle de mensalidades",
+      "Gestão de inadimplência",
+      "Emissão de boletos",
+      "Fluxo de caixa",
+      "Relatórios financeiros",
+      "Integração com sistemas bancários",
+    ],
+    image: "/placeholder.svg?height=300&width=500",
+  },
+  {
+    id: "comunicacao",
+    name: "Comunicação",
+    icon: MessageSquare,
+    color: "purple",
+    description: "Canais integrados para comunicação entre escola, professores, alunos e pais.",
+    features: [
+      "Chat interno",
+      "Envio de comunicados",
+      "Portal para pais e alunos",
+      "Agenda de eventos",
+      "Notificações push",
+      "Compartilhamento de arquivos",
+    ],
+    image: "/placeholder.svg?height=300&width=500",
+  },
 ]
 
-const AnimatedResources = () => {
-  const containerTop = useRef<HTMLDivElement>(null)
-  const containerBottom = useRef<HTMLDivElement>(null)
+export default function AnimatedResources() {
+  const [activeTab, setActiveTab] = useState("academico")
 
-  const [pauseTop, setPauseTop] = useState(false)
-  const [pauseBottom, setPauseBottom] = useState(false)
-
-  useEffect(() => {
-    let rafId: number
-    let offsetTop = 0
-    let offsetBottom = 0
-    let directionTop = 1
-    let directionBottom = -1
-
-    const animate = () => {
-      if (containerTop.current && !pauseTop) {
-        offsetTop += directionTop
-        containerTop.current.style.transform = `translateX(${offsetTop}px)`
-        if (Math.abs(offsetTop) > containerTop.current.scrollWidth / 2) {
-          directionTop *= -1
-        }
-      }
-
-      if (containerBottom.current && !pauseBottom) {
-        offsetBottom += directionBottom
-        containerBottom.current.style.transform = `translateX(${offsetBottom}px)`
-        if (Math.abs(offsetBottom) > containerBottom.current.scrollWidth / 2) {
-          directionBottom *= -1
-        }
-      }
-
-      rafId = requestAnimationFrame(animate)
+  const getColorClass = (color: string, element: "bg" | "text" | "border") => {
+    const colorMap = {
+      blue: {
+        bg: "bg-blue-400",
+        text: "text-blue-400",
+        border: "border-blue-400",
+      },
+      yellow: {
+        bg: "bg-yellow-400",
+        text: "text-yellow-400",
+        border: "border-yellow-400",
+      },
+      green: {
+        bg: "bg-green-400",
+        text: "text-green-400",
+        border: "border-green-400",
+      },
+      purple: {
+        bg: "bg-purple-400",
+        text: "text-purple-400",
+        border: "border-purple-400",
+      },
     }
 
-    animate()
-    return () => cancelAnimationFrame(rafId)
-  }, [pauseTop, pauseBottom])
+    return colorMap[color as keyof typeof colorMap][element]
+  }
 
-  const renderItem = (
-    item: (typeof recursos)[0],
-    index: number,
-    onPause: () => void,
-    onResume: () => void
-  ) => (
-    <motion.div
-      key={index}
-      whileHover={{ scale: 1.05 }}
-      className="flex items-center gap-2 bg-white/10 text-white rounded-xl p-4 w-[250px] hover:cursor-pointer"
-      onMouseEnter={onPause}
-      onMouseLeave={onResume}
-    >
-      <item.icon className="text-yellow-400 h-6 w-6" />
-      <span className="text-base font-medium">{item.label}</span>
-    </motion.div>
-  )
+  const activeResource = resources.find((r) => r.id === activeTab)
 
   return (
-    <div className="overflow-hidden space-y-6">
-      <div className="flex gap-6 w-max" ref={containerTop}>
-        {[...recursos, ...recursos].map((item, i) =>
-          renderItem(item, i, () => setPauseTop(true), () => setPauseTop(false))
-        )}
-      </div>
-      <div className="flex gap-6 w-max" ref={containerBottom}>
-        {[...recursos, ...recursos].map((item, i) =>
-          renderItem(item, i, () => setPauseBottom(true), () => setPauseBottom(false))
-        )}
-      </div>
+    <div className="mt-12">
+      <Tabs defaultValue="academico" value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid grid-cols-2 md:grid-cols-4 bg-white/5 p-1 rounded-xl mb-8">
+          {resources.map((resource) => (
+            <TabsTrigger
+              key={resource.id}
+              value={resource.id}
+              className={`py-3 data-[state=active]:${getColorClass(resource.color, "text")} data-[state=active]:bg-white/10`}
+            >
+              <div className="flex items-center gap-2">
+                <resource.icon className="h-5 w-5" />
+                <span className="hidden md:inline">{resource.name}</span>
+              </div>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+
+        {resources.map((resource) => (
+          <TabsContent
+            key={resource.id}
+            value={resource.id}
+            className="focus-visible:outline-none focus-visible:ring-0"
+          >
+            <div className="grid md:grid-cols-2 gap-8 items-center">
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5 }}
+                className="space-y-6"
+              >
+                <div
+                  className={`inline-flex items-center px-4 py-2 rounded-full ${getColorClass(resource.color, "bg")}/20 ${getColorClass(resource.color, "text")} text-sm font-medium`}
+                >
+                  <resource.icon className="h-4 w-4 mr-2" />
+                  {resource.name}
+                </div>
+
+                <h3 className="text-2xl md:text-3xl font-bold text-white">
+                  {resource.name}: Gestão completa e integrada
+                </h3>
+
+                <p className="text-white/80 text-lg">{resource.description}</p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                  {resource.features.map((feature, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.1 }}
+                      className="flex items-start gap-2"
+                    >
+                      <div
+                        className={`mt-1 h-5 w-5 rounded-full ${getColorClass(resource.color, "bg")}/20 flex items-center justify-center flex-shrink-0`}
+                      >
+                        <CheckCircle className={`h-3 w-3 ${getColorClass(resource.color, "text")}`} />
+                      </div>
+                      <span className="text-white/90">{feature}</span>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="relative rounded-xl overflow-hidden border border-white/10 shadow-xl"
+              >
+                <div className={`absolute inset-0 ${getColorClass(resource.color, "bg")}/5`} />
+                <Image
+                  src={resource.image || "/placeholder.svg"}
+                  alt={`${resource.name} screenshot`}
+                  width={500}
+                  height={300}
+                  className="w-full h-auto"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+              </motion.div>
+            </div>
+          </TabsContent>
+        ))}
+      </Tabs>
     </div>
   )
 }
 
-export default AnimatedResources
+import { CheckCircle } from "lucide-react"

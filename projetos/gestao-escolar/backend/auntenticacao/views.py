@@ -114,3 +114,15 @@ class ChangePasswordView(APIView):
         usuario.senha_temporaria = False
         usuario.save()
         return Response({"message": "Senha alterada com sucesso."}, status=status.HTTP_200_OK)
+
+
+
+
+
+
+
+class VerificarTokenView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response({"message": "Token válido"})

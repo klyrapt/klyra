@@ -9,14 +9,14 @@ import TurmaTableSearch from "@/components/TurmaTableSearch";
 import Image from "next/image";
 import { getAuthToken } from "@/lib/auth";
 import { withAuth } from "@/lib/withAuth";
-
+import TurmaFormSelector from "@/components/TurmaFormSelector"; // ✅ NOVO
 
 type Turma = {
   id: number;
   nome: string;
   ano_letivo: number;
   capacidade?: number;
-  diretor_turma_nome?: string; // <- campo retornado do serializer via to_representation
+  diretor_turma_nome?: string;
 };
 
 const columns = [
@@ -52,10 +52,7 @@ const ClassListPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
-
-
-
-
+  const [showFormSelector, setShowFormSelector] = useState(false); // ✅ NOVO
 
   const fetchTurmas = async (page = 1, search = "") => {
     try {
@@ -64,11 +61,11 @@ const ClassListPage = () => {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        params: { page, search }
+        params: { page, search },
       });
-  
-      setTurmas(response.data.results); // <- importante
-      setCount(response.data.count);    // <- importante
+
+      setTurmas(response.data.results);
+      setCount(response.data.count);
       setCurrentPage(page);
     } catch (error) {
       console.error("Erro ao buscar turmas:", error);
@@ -76,15 +73,11 @@ const ClassListPage = () => {
       setLoading(false);
     }
   };
-  
-  
 
   useEffect(() => {
     fetchTurmas();
   }, []);
 
-
-  
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchTerm(value);
@@ -96,17 +89,12 @@ const ClassListPage = () => {
     setSearchTimeout(timeout);
   };
 
-  
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       if (searchTimeout) clearTimeout(searchTimeout);
       fetchTurmas(1, searchTerm);
     }
   };
-
-
-
-
 
   const renderRow = (item: Turma) => (
     <tr
@@ -142,11 +130,10 @@ const ClassListPage = () => {
       <div className="flex items-center justify-between">
         <h1 className="hidden md:block text-lg font-semibold">Todas as Turmas</h1>
         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-          <TurmaTableSearch 
-           value={searchTerm}
-           onChange={handleSearchChange}
-           onKeyDown={handleSearchKeyDown}
-          
+          <TurmaTableSearch
+            value={searchTerm}
+            onChange={handleSearchChange}
+            onKeyDown={handleSearchKeyDown}
           />
           <div className="flex items-center gap-4 self-end">
             <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
@@ -155,7 +142,14 @@ const ClassListPage = () => {
             <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
               <Image src="/sort.png" alt="Ordenar" width={14} height={14} />
             </button>
-            <FormModal table="class" type="create" onSuccess={fetchTurmas} />
+
+            {/* ✅ BOTÃO PARA ABRIR O FORM SELECTOR */}
+            <button
+              onClick={() => setShowFormSelector(true)}
+              className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow"
+            >
+              <Image src="/create.png" alt="Criar" width={14} height={14} />
+            </button>
           </div>
         </div>
       </div>
@@ -171,7 +165,6 @@ const ClassListPage = () => {
         <p className="text-center py-6 text-gray-500">Nenhuma turma encontrada.</p>
       )}
 
-
       {/* PAGINAÇÃO */}
       <Pagination
         currentPage={currentPage}
@@ -179,6 +172,19 @@ const ClassListPage = () => {
         pageSize={10}
         onPageChange={(page) => fetchTurmas(page, searchTerm)}
       />
+
+      {/* ✅ MODAL DE CRIAÇÃO DINÂMICA */}
+      {showFormSelector && (
+        <TurmaFormSelector
+        open={showFormSelector}
+        onOpenChange={setShowFormSelector} 
+        onSuccess={() => {
+          fetchTurmas();
+          setShowFormSelector(false);
+        }}
+      />
+      
+      )}
     </div>
   );
 };

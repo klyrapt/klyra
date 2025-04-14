@@ -11,6 +11,7 @@ import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import { BASE_URL } from "@/lib/constants";
 import DeletePopup from "@/components/DeletePopup";
+import {ProfessorDeleteDialog} from "@/app/(dashboard)/list/professores/ProfessorDeleteDialog"
 
 type Professor = {
   id: number;
@@ -29,7 +30,7 @@ const columns = [
   { header: "Disciplinas", accessor: "disciplinas", className: "hidden md:table-cell" },
   { header: "Turmas", accessor: "turmas", className: "hidden md:table-cell" },
   { header: "Telefone", accessor: "telefone", className: "hidden lg:table-cell" },
-  { header: "Morada", accessor: "endereco_completo", className: "hidden lg:table-cell" },
+  
   { header: "Ações", accessor: "action" },
 ];
 
@@ -39,26 +40,41 @@ const TeacherListPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
-  
   const [popup, setPopup] = useState<null | { type: "success" | "error"; message: string }>(null);
+
+  const [openDelete, setOpenDelete] = useState(false);
+  const [selectedProfessor, setSelectedProfessor] = useState<Professor | null>(null);
+
 
   const fetchProfessores = async (page = 1, search = "") => {
     try {
       const token = localStorage.getItem("accessToken");
+  
+      const params: any = { page };
+  
+      if (search.trim()) {
+        params["search"] = search.trim(); // padronizado igual matrícula
+      }
 
       const [profRes, ensinoRes] = await Promise.all([
         axios.get("http://localhost:8000/api/professores/", {
           headers: { Authorization: `Bearer ${token}` },
-          params: { page, search },
+          params,
         }),
         axios.get("http://localhost:8000/api/ensinos/", {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
-
-      const ensinos = ensinoRes.data;
-
-      const professoresComDados = profRes.data.results.map((prof: any) => {
+  
+      const profList = Array.isArray(profRes.data)
+        ? profRes.data
+        : profRes.data.results || [];
+  
+      const ensinos = Array.isArray(ensinoRes.data)
+        ? ensinoRes.data
+        : ensinoRes.data.results || [];
+  
+      const professoresComDados = profList.map((prof: any) => {
         const ensinosDoProfessor = ensinos.filter((e: any) => e.professor === prof.id);
         return {
           ...prof,
@@ -66,16 +82,16 @@ const TeacherListPage = () => {
           turmas: Array.from(new Set(ensinosDoProfessor.map((e: any) => e.turma_nome))),
         };
       });
-
+  
       setProfessores(professoresComDados);
-      setCount(profRes.data.count);
+      setCount(profRes.data.count || professoresComDados.length);
       setCurrentPage(page);
     } catch (error) {
       console.error("Erro ao carregar professores:", error);
       setPopup({ type: "error", message: "Erro ao carregar professores." });
     }
   };
-
+  
   useEffect(() => {
     fetchProfessores();
   }, []);
@@ -90,6 +106,15 @@ const TeacherListPage = () => {
     }, 500);
     setSearchTimeout(timeout);
   };
+
+
+
+
+  const handleOpenDeleteDialog = (professor: Professor) => {
+    setSelectedProfessor(professor);
+    setOpenDelete(true);
+  };
+  
 
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
@@ -120,16 +145,16 @@ const TeacherListPage = () => {
         {item.turmas?.join(", ") || "-"}
       </td>
       <td className="hidden md:table-cell px-4 py-3">{item.telefone || "-"}</td>
-      <td className="hidden md:table-cell px-4 py-3">{item.endereco_completo || "-"}</td>
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
-          <Link href={`/list/teachers/${item.id}`}>
+          <Link href={`/list/professores/${item.id}`}>
             <button className="w-7 h-7 flex items-center justify-center rounded-full bg-lamaSky">
               <Image src="/view.png" alt="" width={16} height={16} />
             </button>
           </Link>
           <FormModal table="teacher" type="update" data={item} onSuccess={() => fetchProfessores(currentPage, searchTerm)} />
           <FormModal table="teacher" type="delete" id={item.id} onSuccess={() => fetchProfessores(currentPage, searchTerm)} />
+
           <FormModal table="teacherAssignment" type="create" data={{ professor: item.id }} onSuccess={() => fetchProfessores(currentPage, searchTerm)} />
         </div>
       </td>
@@ -160,15 +185,14 @@ const TeacherListPage = () => {
       </div>
 
       <div className="overflow-x-auto mt-4">
-          {professores.length > 0 ? (
-            <Table columns={columns} renderRow={renderRow} data={professores} />
-          ) : (
-            <p className="text-center text-sm text-red-600 mt-4">
-              Nenhum professor encontrado com esse nome.
-            </p>
-          )}
+        {professores.length > 0 ? (
+          <Table columns={columns} renderRow={renderRow} data={professores} />
+        ) : (
+          <p className="text-center text-sm text-red-600 mt-4">
+            Nenhum professor encontrado com esse nome.
+          </p>
+        )}
       </div>
-
 
       <Pagination
         currentPage={currentPage}

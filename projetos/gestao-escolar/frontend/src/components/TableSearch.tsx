@@ -12,7 +12,7 @@ const TableSearch = ({ value, onChange, onKeyDown }: TableSearchProps) => {
       <Image src="/search.png" alt="Buscar" width={16} height={16} />
       <input
         type="text"
-        placeholder="Pesquisar professores..."
+        placeholder="Pesquisar..."
         value={value}
         onChange={onChange}
         onKeyDown={onKeyDown}

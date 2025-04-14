@@ -61,6 +61,7 @@ LOCAL_APPS = [
     "sala.apps.SalaConfig",
     "responsavel.apps.ResponsavelConfig",
     "ensino.apps.EnsinoConfig",
+    "financeiro.apps.FinanceiroConfig",
 ]
 
 THIRD_PARTY_APPS=[
@@ -95,7 +96,7 @@ AUTH_USER_MODEL = "core.User"
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -186,13 +187,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 
-
+#"rest_framework_simplejwt.authentication.JWTAuthentication",
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "core.authentication.SafeJWTAuthentication",
     ],
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+    
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
 }
 
 
@@ -239,3 +243,35 @@ else:
 
 
 #ENVIRONMENT = config("ENVIRONMENT", default="development")
+
+
+
+STATICFILES_STORAGE = "storages.backends.s3.S3Storage"
+
+
+STORAGES = {
+    "default": {"BACKEND": "storages.backends.s3boto3.S3Boto3Storage"},
+    "staticfiles": {"BACKEND": "storages.backends.s3boto3.S3Boto3Storage"},
+}
+
+AWS_ACCESS_KEY_ID = config("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = config("AWS_STORAGE_BUCKET_NAME")
+AWS_S3_REGION_NAME = config("AWS_S3_REGION_NAME")
+AWS_DEFAULT_ACL = "public-read"
+AWS_QUERYSTRING_AUTH = False
+
+
+
+
+
+
+WKHTMLTOPDF_PATH = config(
+    "WKHTMLTOPDF_PATH",
+    default=r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe"
+)
+
+# Validação extra (opcional)
+if not os.path.exists(WKHTMLTOPDF_PATH):
+    print("⚠️  Atenção: Caminho do wkhtmltopdf não encontrado. Verifique o settings.")
+

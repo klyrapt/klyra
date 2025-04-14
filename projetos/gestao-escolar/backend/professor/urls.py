@@ -1,12 +1,11 @@
-from django.urls import path
-from professor.views import (
-    ProfessorListCreateAPIView,
-    ProfessorDetailAPIView,
-)
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import ProfessorViewSet,ProfessorDetailAPIView
 
-
+router = DefaultRouter()
+router.register(r'professores', ProfessorViewSet, basename='professor')
+router.register(r'professores/<int:pk>/', ProfessorDetailAPIView, basename='dados-prof')
 
 urlpatterns = [
-    path("professores/", ProfessorListCreateAPIView.as_view(), name="professor-list-create"),
-    path("professores/<int:pk>/", ProfessorDetailAPIView.as_view(), name="professor-detail"),
+    path('', include(router.urls)),
 ]

@@ -5,10 +5,14 @@ from ensino.models import Ensino
 
 
 class ProfessorSerializer(serializers.ModelSerializer):
-    usuario_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(tipo="professor"), source="usuario", write_only=True)
+    usuario_id = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.filter(tipo="professor"),
+        source="usuario",
+        write_only=True
+    )
     nome = serializers.CharField(source="usuario.nome", read_only=True)
     email = serializers.EmailField(source="usuario.email", read_only=True)
-    
+
     disciplinas_atribuidas = serializers.SerializerMethodField()
     turmas_atribuidas = serializers.SerializerMethodField()
 
@@ -20,10 +24,10 @@ class ProfessorSerializer(serializers.ModelSerializer):
             "telefone", "data_nascimento", "genero",
             "nacionalidade", "naturalidade",
             "endereco_completo", "bairro", "cidade", "codigo_postal",
-            "data_admissao", "regime_trabalho", "ativo", "usuario",
+            "data_admissao", "regime_trabalho", "ativo",
             "disciplinas_atribuidas", "turmas_atribuidas"
         ]
-        read_only_fields = ["id"]
+        read_only_fields = ["id", "nome", "email", "disciplinas_atribuidas", "turmas_atribuidas"]
 
     def get_disciplinas_atribuidas(self, obj):
         disciplinas = Ensino.objects.filter(professor=obj).values_list("disciplina__nome", flat=True).distinct()
@@ -41,10 +45,12 @@ class ProfessorSerializer(serializers.ModelSerializer):
         return usuario
 
     def create(self, validated_data):
+        """
+        Só será usado no caso do admin querer vincular um usuário já existente ao modelo Professor
+        (Não é o caso do nosso ViewSet personalizado).
+        """
         user = self.context["request"].user
-
         if not hasattr(user, "instituicao"):
             raise serializers.ValidationError("Você não tem permissão para criar professores.")
-
         validated_data["instituicao"] = user.instituicao
         return super().create(validated_data)

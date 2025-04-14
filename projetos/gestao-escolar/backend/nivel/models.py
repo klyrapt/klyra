@@ -14,7 +14,7 @@ class Nivel(models.Model):
     )
 
     def __str__(self):
-        return f"{self.nome} ({self.instituicao.nome})"
+        return f"{self.nome}"
 
 
 

@@ -2,12 +2,18 @@ from django.db import models
 from escola.models import Instituicao
 from core.models import User
 from responsavel.models import Responsavel
+from uuid import uuid4
+
+
+
+def get_unique_filename(instance, filename):
+    return f"foto_perfil/{uuid4()}-{filename}"
+
 
 
 
 
 class Aluno(models.Model):
-    numero_aluno = models.CharField(max_length=20, unique=True, blank=True)
     nome_completo = models.CharField(max_length=255)
     email = models.EmailField(blank=True, null=True)
     telefone = models.CharField(max_length=20, blank=True, null=True)
@@ -35,7 +41,7 @@ class Aluno(models.Model):
     escola_anterior = models.CharField(max_length=255, blank=True)
     ano_concluido_anterior = models.CharField(max_length=10, blank=True)
 
-    foto_perfil = models.ImageField(upload_to='alunos/foto_perfil/', blank=True, null=True)
+    foto_perfil = models.ImageField(upload_to=get_unique_filename, blank=True, null=True)
     pai_nome = models.CharField(max_length=255, blank=True)
     mae_nome = models.CharField(max_length=255, blank=True)
 
@@ -48,9 +54,5 @@ class Aluno(models.Model):
     def __str__(self):
         return self.nome_completo
 
-    def save(self, *args, **kwargs):
-        if not self.numero_aluno:
-            ano = self.criado_em.year if self.criado_em else 2025
-            contador = Aluno.objects.count() + 1
-            self.numero_aluno = f"AL{ano}{contador:03}"
-        super().save(*args, **kwargs)
+
+    

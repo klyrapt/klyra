@@ -17,6 +17,9 @@ from escola.models import Instituicao
 
 import random
 
+from django.db.models import Q
+from matricula.models import NumeroAluno
+
 class PaginacaoPadrao(PageNumberPagination):
     page_size = 10
     page_size_query_param = 'page_size'
@@ -35,19 +38,44 @@ class AlunoListCreateAPIView(ListCreateAPIView):
     permission_classes = [IsAuthenticated, IsAdminOrReadOnly]
     pagination_class = PaginacaoPadrao
     filter_backends = [SearchFilter]
-    search_fields = ['nome_completo', 'email', 'numero_aluno', 'telefone']
+    search_fields = ['nome_completo', 'email',  'telefone']
+    ordering = ['nome_completo']
 
     def get_queryset(self):
         instituicao = get_instituicao_do_admin(self.request.user)
         if not instituicao:
             return Aluno.objects.none()
-        return Aluno.objects.filter(instituicao=instituicao)
+
+        queryset = Aluno.objects.filter(instituicao=instituicao)
+
+        search = self.request.query_params.get("search")
+        if search:
+            numero_ids = NumeroAluno.objects.filter(
+                numero_aluno__iexact=search,
+                matricula__aluno__instituicao=instituicao
+            ).values_list("matricula__aluno_id", flat=True)
+
+            queryset = queryset.filter(
+                Q(nome_completo__icontains=search) |
+                Q(email__icontains=search) |
+                Q(telefone__icontains=search) |
+                Q(id__in=numero_ids)
+            )
+
+        return queryset.order_by("nome_completo")  # 👈 isso aqui resolve o aviso
+
+
+
+
+
 
     def create(self, request, *args, **kwargs):
         instituicao = get_instituicao_do_admin(request.user)
         if not instituicao:
-            return Response({"detail": "Apenas administradores de instituição podem criar alunos."},
-                            status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                {"detail": "Apenas administradores de instituição podem criar alunos."},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
         email = request.data.get("email")
         nome = request.data.get("nome_completo")
@@ -60,73 +88,48 @@ class AlunoListCreateAPIView(ListCreateAPIView):
 
         senha_temporaria = get_random_string(length=8)
         codigo_verificacao = gerar_codigo_verificacao()
-        tem_def = request.data.get("tem_alguma_deficiencia", False)
-        tem_alguma_deficiencia = tem_def in ["true", "True", True, "1", 1]
 
-
-        # Criar usuário
+        # Criação do usuário do aluno
         usuario = User.objects.create_user(
             email=email,
-            tipo="aluno",
             nome=nome,
+            tipo="aluno",
             password=senha_temporaria,
             is_active=False,
             codigo_verificacao=codigo_verificacao
         )
 
-        aluno = Aluno.objects.create(
-            usuario=usuario,
-            instituicao=instituicao,
-            nome_completo=nome,
-            email=email,
-            telefone=request.data.get("telefone"),
-            data_nascimento=request.data.get("data_nascimento"),
-            genero=request.data.get("genero"),
-            nacionalidade=request.data.get("nacionalidade"),
-            naturalidade=request.data.get("naturalidade"),
-            documento_identidade=request.data.get("documento_identidade"),
-            numero_documento=request.data.get("numero_documento"),
-            data_emissao_documento=request.data.get("data_emissao_documento"),
-            local_emissao_documento=request.data.get("local_emissao_documento"),
-            endereco_completo=request.data.get("endereco_completo"),
-            bairro=request.data.get("bairro"),
-            cidade=request.data.get("cidade"),
-            codigo_postal=request.data.get("codigo_postal"),
-            tem_alguma_deficiencia=tem_alguma_deficiencia,
-            descricao_deficiencia=request.data.get("descricao_deficiencia", ""),
-            alergias=request.data.get("alergias", ""),
-            plano_saude=request.data.get("plano_saude", ""),
-            situacao_escolar_anterior=request.data.get("situacao_escolar_anterior", ""),
-            escola_anterior=request.data.get("escola_anterior", ""),
-            ano_concluido_anterior=request.data.get("ano_concluido_anterior", ""),
-            pai_nome=request.data.get("pai_nome"),
-            mae_nome=request.data.get("mae_nome"),
-            responsavel_id=request.data.get("responsavel"),
-            foto_perfil=request.data.get("foto_perfil")
-        )
+        # Copiamos os dados e substituímos apenas os campos necessários
+        aluno_data = request.data.copy()
+        aluno_data["instituicao"] = instituicao.id
 
+        # Usamos o serializer com instance do usuário em vez de passar o ID
+        serializer = AlunoSerializer(data=aluno_data, context={"request": request})
+        if serializer.is_valid():
+            aluno = serializer.save(usuario=usuario)  # Passando o usuário aqui
 
-        # Enviar e-mail
-        send_mail(
-            subject="Acesso à Plataforma EduGestão - Confirmação de E-mail",
-            message=(
-                f"Olá, {nome},\n\n"
-                f"Seu acesso foi criado na plataforma EduGestão.\n\n"
-                f"📌 Email: {email}\n"
-                f"🔑 Senha temporária: {senha_temporaria}\n"
-                f"🧾 Código de verificação: {codigo_verificacao}\n\n"
-                f"Acesse o sistema, confirme seu e-mail e altere sua senha."
-            ),
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[email],
-            fail_silently=False
-        )
+            # Envio do e-mail
+            send_mail(
+                subject="Acesso à Plataforma EduGestão - Confirmação de E-mail",
+                message=(
+                    f"Olá, {nome},\n\n"
+                    f"Seu acesso foi criado na plataforma EduGestão.\n\n"
+                    f"📌 Email: {email}\n"
+                    f"🔑 Senha temporária: {senha_temporaria}\n"
+                    f"🧾 Código de verificação: {codigo_verificacao}\n\n"
+                    f"Acesse o sistema, confirme seu e-mail e altere sua senha."
+                ),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email],
+                fail_silently=False
+            )
 
-        serializer = AlunoSerializer(aluno)
-        return Response({
-            "mensagem": "Aluno criado com sucesso. Um e-mail com as credenciais foi enviado.",
-            "aluno": serializer.data
-        }, status=status.HTTP_201_CREATED)
+            return Response({
+                "mensagem": "Aluno criado com sucesso. Um e-mail com as credenciais foi enviado.",
+                "aluno": AlunoSerializer(aluno).data
+            }, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 

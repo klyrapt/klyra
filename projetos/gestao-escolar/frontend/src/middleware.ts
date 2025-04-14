@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api";
 
-// Função para verificar se o token está expirado (sem usar jwt-decode)
+// Verifica se o token JWT expirou (sem usar jwt-decode)
 function tokenExpirado(token: string): boolean {
   try {
     const payloadBase64 = token.split('.')[1];
@@ -13,16 +14,31 @@ function tokenExpirado(token: string): boolean {
   }
 }
 
-export function middleware(request: NextRequest) {
-  const token = request.cookies.get("accessToken")?.value;
+// Função para validar o token com o back-end
+async function validarTokenComBackend(token: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/auth/verificar-token/`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return res.ok;
+  } catch (error) {
+    return false;
+  }
+}
 
+export async function middleware(request: NextRequest) {
+  const token = request.cookies.get("accessToken")?.value;
   const url = request.nextUrl.clone();
+
   const rotaProtegida = protectedRoutes.some((path) =>
     url.pathname.startsWith(path)
   );
 
   if (rotaProtegida) {
-    if (!token || tokenExpirado(token)) {
+    if (!token || tokenExpirado(token) || !(await validarTokenComBackend(token))) {
       url.pathname = "/sign-in";
       return NextResponse.redirect(url);
     }
@@ -36,16 +52,9 @@ const protectedRoutes = [
   "/dashboard",
   "/perfil",
   "/redefinir-senha",
-  "/list",       // protege tudo que começa com /list/
- 
+  "/list",
 ];
 
 export const config = {
-  matcher: [
-    "/admin/:path*",
-    "/dashboard/:path*",
-    "/perfil/:path*",
-    "/redefinir-senha/:path*",
-    "/list/:path*",
-  ],
+  matcher: protectedRoutes.map((path) => `${path}/:path*`),
 };

@@ -5,15 +5,18 @@ import Image from "next/image";
 import { useState } from "react";
 import axios from "axios";
 import DeletePopup from "./DeletePopup";
+import { ProfessorDeleteDialog } from "@/app/(dashboard)/list/professores/ProfessorDeleteDialog";
 
-// Dynamically import the form components
+// Forms dinâmicos
 const TeacherForm = dynamic(() => import("./forms/TeacherForm"));
+const PriceForm = dynamic(() => import("./forms/PriceForm"));
 const StudentForm = dynamic(() => import("./forms/StudentForm"));
 const SubjectForm = dynamic(() => import("../components/forms/SubjectForm"));
 const TurmaForm = dynamic(() => import("../components/forms/TurmaForm"));
 const TeacherAssignmentForm = dynamic(() => import("../components/forms/TeacherAssignmentForm"));
+const MultiStepTurmaForm = dynamic(() => import("../components/turma/MultiStepTurmaForm"));
 
-// Map forms to each table
+// Map de formulários
 const forms: Record<
   string,
   (
@@ -32,9 +35,22 @@ const forms: Record<
   subject: (type, data, onSuccess, onClose) => (
     <SubjectForm type={type} data={data} onSuccess={onSuccess} onClose={onClose} />
   ),
-  class: (type, data, onSuccess, onClose) => (
-    <TurmaForm type={type} data={data} onSuccess={onSuccess} onClose={onClose} />
-  ),
+  class: (type, data, onSuccess, onClose) =>
+    type === "create" ? (
+      <MultiStepTurmaForm
+        onSuccess={() => {
+          onSuccess?.();
+          onClose?.();
+        }}
+      />
+    ) : (
+      <TurmaForm
+        type={type}
+        data={data}
+        onSuccess={onSuccess}
+        onClose={onClose}
+      />
+    ),
   teacherAssignment: (type, data, onSuccess, onClose) => (
     <TeacherAssignmentForm
       professorId={data.professor}
@@ -42,10 +58,12 @@ const forms: Record<
       onClose={onClose || (() => {})}
     />
   ),
+  price: (type, data, onSuccess, onClose) => (
+    <PriceForm type={type} data={data} onSuccess={onSuccess} onClose={onClose} />
+  ),
 };
 
-
-// Map logical table names to real API endpoint names
+// Endpoints
 const endpointMap: Record<string, string> = {
   teacher: "professores",
   student: "alunos",
@@ -62,6 +80,7 @@ const endpointMap: Record<string, string> = {
   announcement: "avisos",
   parent: "pais",
   ensino: "ensinos",
+  price: "precos",
 };
 
 const FormModal = ({
@@ -76,6 +95,7 @@ const FormModal = ({
     | "student"
     | "parent"
     | "subject"
+    | "price"
     | "disciplina"
     | "turmas"
     | "lesson"
@@ -90,7 +110,7 @@ const FormModal = ({
     | "teacherAssignment";
   type: "create" | "update" | "delete";
   data?: any;
-  id?: number ;
+  id?: number;
   onSuccess?: () => void;
 }) => {
   const size = type === "create" ? "w-8 h-8" : "w-7 h-7";
@@ -129,32 +149,42 @@ const FormModal = ({
     }
   };
 
-const Form = () => {
-  if (type === "delete" && id) {
-    return (
-      <div className="p-4 flex flex-col gap-4 items-center justify-center text-center relative">
-        {popup && <DeletePopup type={popup.type} message={popup.message} />}
-        <span className="text-center font-medium">
-          Todos os dados serão perdidos. Tem certeza que deseja excluir?
-        </span>
-        <button
-          type="button"
-          onClick={handleDelete}
-          className="bg-red-700 text-white py-2 px-6 rounded-md hover:bg-red-800"
-        >
-          Deletar
-        </button>
-      </div>
-    );
-  }
+  const Form = () => {
+    if (type === "delete" && id) {
+      if (table === "teacher") {
+        return (
+          <ProfessorDeleteDialog
+            open={true}
+            professorNome={data?.nome}
+            onClose={() => setOpen(false)}
+            onConfirm={handleDelete}
+          />
+        );
+      }
 
-  if ((type === "create" || type === "update") && typeof forms[table] === "function") {
-    return forms[table](type, data, onSuccess, () => setOpen(false));
-  }
+      return (
+        <div className="p-4 flex flex-col gap-4 items-center justify-center text-center relative">
+          {popup && <DeletePopup type={popup.type} message={popup.message} />}
+          <span className="text-center font-medium">
+            Todos os dados serão perdidos. Tem certeza que deseja excluir?
+          </span>
+          <button
+            type="button"
+            onClick={handleDelete}
+            className="bg-red-700 text-white py-2 px-6 rounded-md hover:bg-red-800"
+          >
+            Deletar
+          </button>
+        </div>
+      );
+    }
 
-  return <p>Formulário não encontrado.</p>;
-};
+    if ((type === "create" || type === "update") && typeof forms[table] === "function") {
+      return forms[table](type, data, onSuccess, () => setOpen(false));
+    }
 
+    return <p>Formulário não encontrado.</p>;
+  };
 
   return (
     <>
@@ -166,15 +196,13 @@ const Form = () => {
       </button>
       {open && (
         <div className="w-screen h-screen fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center">
-         <div className="bg-white p-4 rounded-md relative w-full max-w-4xl mx-auto overflow-y-auto max-h-[90vh]">
-
-
+          <div className="bg-white p-4 rounded-md relative w-full max-w-4xl mx-auto overflow-y-auto max-h-[90vh]">
             <Form />
             <div
               className="absolute top-4 right-4 cursor-pointer"
               onClick={() => setOpen(false)}
             >
-              <Image src="/close.png" alt="" width={16} height={16} />
+              <Image src="/close.png" alt="Fechar" width={16} height={16} />
             </div>
           </div>
         </div>

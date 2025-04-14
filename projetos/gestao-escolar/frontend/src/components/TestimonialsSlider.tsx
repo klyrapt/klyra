@@ -1,75 +1,149 @@
 "use client"
 
-import { motion } from "framer-motion"
+import { useState, useEffect } from "react"
 import Image from "next/image"
+import { motion, AnimatePresence } from "framer-motion"
+import { ChevronLeft, ChevronRight, Quote } from "lucide-react"
 
 const testimonials = [
   {
-    nome: "Maria Silva",
-    cargo: "Diretora, Colégio Progresso",
-    avatar: "/avatar.png",
-    texto:
-      "Reduzimos em 70% o tempo com tarefas administrativas. Agora focamos no que importa: nossos alunos.",
+    id: 1,
+    content:
+      "A Klyra transformou completamente a gestão da nossa escola. Economizamos horas de trabalho administrativo e melhoramos a comunicação com os pais.",
+    author: "Maria Silva",
+    role: "Diretora Escolar",
+    avatar: "/placeholder.svg?height=80&width=80",
+    school: "Colégio Futuro",
   },
   {
-    nome: "Carlos Oliveira",
-    cargo: "Coordenador, Escola Nova Era",
-    avatar: "/avatar.png",
-    texto:
-      "A comunicação com os pais melhorou significativamente. Eles acompanham tudo em tempo real.",
+    id: 2,
+    content:
+      "Como professor, posso dizer que o sistema de lançamento de notas e frequência é o mais intuitivo que já utilizei. Recomendo para todas as escolas.",
+    author: "João Santos",
+    role: "Professor de Matemática",
+    avatar: "/placeholder.svg?height=80&width=80",
+    school: "Escola Modelo",
   },
   {
-    nome: "Ana Beatriz",
-    cargo: "Secretária, Instituto Educacional Futuro",
-    avatar: "/avatar.png",
-    texto:
-      "O suporte técnico é excelente. A migração foi simples e rápida. Super recomendo!",
-  },
-  {
-    nome: "Roberto Santos",
-    cargo: "Diretor Financeiro, Rede Crescer",
-    avatar: "/avatar.png",
-    texto:
-      "Reduzimos a inadimplência em 35% no primeiro semestre com o controle financeiro da plataforma.",
+    id: 3,
+    content:
+      "A implementação foi rápida e o suporte é excelente. Nossa equipe se adaptou facilmente e os pais adoraram o acesso às informações dos alunos.",
+    author: "Ana Oliveira",
+    role: "Coordenadora Pedagógica",
+    avatar: "/placeholder.svg?height=80&width=80",
+    school: "Instituto Educação",
   },
 ]
 
 export default function TestimonialsSlider() {
-  const duplicated = [...testimonials, ...testimonials] // duplica para scroll contínuo
+  const [current, setCurrent] = useState(0)
+  const [autoplay, setAutoplay] = useState(true)
+
+  useEffect(() => {
+    if (!autoplay) return
+
+    const interval = setInterval(() => {
+      setCurrent((prev) => (prev === testimonials.length - 1 ? 0 : prev + 1))
+    }, 5000)
+
+    return () => clearInterval(interval)
+  }, [autoplay])
+
+  const next = () => {
+    setAutoplay(false)
+    setCurrent((prev) => (prev === testimonials.length - 1 ? 0 : prev + 1))
+  }
+
+  const prev = () => {
+    setAutoplay(false)
+    setCurrent((prev) => (prev === 0 ? testimonials.length - 1 : prev - 1))
+  }
 
   return (
-    <div className="overflow-hidden relative w-full">
-      <motion.div
-        className="flex gap-6 w-max"
-        animate={{ x: ["0%", "-50%"] }}
-        transition={{
-          repeat: Infinity,
-          ease: "linear",
-          duration: 25,
-        }}
-      >
-        {duplicated.map((item, i) => (
-          <div
-            key={i}
-            className="min-w-[300px] max-w-xs flex-shrink-0 rounded-lg border p-6 bg-white shadow-md"
-          >
-            <div className="flex items-center gap-4 mb-4">
-              <Image
-                src={item.avatar}
-                alt={item.nome}
-                width={48}
-                height={48}
-                className="rounded-full object-cover"
-              />
-              <div>
-                <p className="font-semibold">{item.nome}</p>
-                <p className="text-sm text-gray-500">{item.cargo}</p>
+    <div className="relative max-w-5xl mx-auto px-4">
+      <div className="absolute top-1/2 -left-4 md:-left-12 transform -translate-y-1/2 z-10">
+        <button
+          onClick={prev}
+          className="p-2 md:p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+          aria-label="Previous testimonial"
+        >
+          <ChevronLeft className="h-5 w-5 md:h-6 md:w-6" />
+        </button>
+      </div>
+
+      <div className="absolute top-1/2 -right-4 md:-right-12 transform -translate-y-1/2 z-10">
+        <button
+          onClick={next}
+          className="p-2 md:p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+          aria-label="Next testimonial"
+        >
+          <ChevronRight className="h-5 w-5 md:h-6 md:w-6" />
+        </button>
+      </div>
+
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-900/40 to-indigo-900/40 backdrop-blur-sm border border-white/10 p-8 md:p-12">
+        <div className="absolute top-6 right-6 text-yellow-400/30">
+          <Quote className="h-16 w-16 md:h-24 md:w-24" />
+        </div>
+
+        <div className="min-h-[300px] flex flex-col justify-between">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={current}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.5 }}
+              className="mb-8"
+            >
+              <p className="text-xl md:text-2xl text-white/90 leading-relaxed relative z-10">
+                "{testimonials[current].content}"
+              </p>
+            </motion.div>
+          </AnimatePresence>
+
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={current}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.5 }}
+              className="flex items-center gap-4"
+            >
+              <div className="relative h-16 w-16 rounded-full overflow-hidden border-2 border-yellow-400/50">
+                <Image
+                  src={testimonials[current].avatar || "/placeholder.svg"}
+                  alt={testimonials[current].author}
+                  fill
+                  className="object-cover"
+                />
               </div>
-            </div>
-            <p className="text-sm text-gray-600 italic">“{item.texto}”</p>
-          </div>
-        ))}
-      </motion.div>
+              <div>
+                <h4 className="text-lg font-semibold text-white">{testimonials[current].author}</h4>
+                <p className="text-white/70">{testimonials[current].role}</p>
+                <p className="text-yellow-400 text-sm">{testimonials[current].school}</p>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        <div className="absolute bottom-8 right-8 flex gap-2">
+          {testimonials.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => {
+                setAutoplay(false)
+                setCurrent(index)
+              }}
+              className={`h-2 rounded-full transition-all duration-300 ${
+                index === current ? "w-8 bg-yellow-400" : "w-2 bg-white/30 hover:bg-white/50"
+              }`}
+              aria-label={`Go to testimonial ${index + 1}`}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   )
 }

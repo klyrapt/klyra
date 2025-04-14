@@ -1,59 +1,138 @@
 import Link from "next/link"
-import { BookOpen } from "lucide-react"
+import { Facebook, Instagram, Twitter, Linkedin, Mail, Phone, MapPin } from "lucide-react"
 
 export default function Footer() {
   return (
-    <footer className="w-full mt-52 border-t border-white/10 bg-[#0b1c35] text-white py-10">
-      <div className="container grid gap-10 md:grid-cols-4">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <BookOpen className="h-6 w-6 text-yellow-400" />
-            <span className="text-xl font-bold">EduGestão</span>
-          </div>
-          <p className="text-sm text-white/70">
-            Transformando a gestão escolar com tecnologia e inovação desde 2015.
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <h3 className="text-sm font-bold">Produto</h3>
-          <ul className="space-y-1 text-sm text-white/70">
-            <li><Link href="#recursos" className="hover:text-yellow-400">Recursos</Link></li>
-            <li><Link href="#precos" className="hover:text-yellow-400">Preços</Link></li>
-            <li><Link href="#contato" className="hover:text-yellow-400">Demonstração</Link></li>
-            <li><Link href="#" className="hover:text-yellow-400">Atualizações</Link></li>
-          </ul>
-        </div>
-
-        <div className="space-y-2">
-          <h3 className="text-sm font-bold">Empresa</h3>
-          <ul className="space-y-1 text-sm text-white/70">
-            <li><Link href="#" className="hover:text-yellow-400">Sobre nós</Link></li>
-            <li><Link href="#" className="hover:text-yellow-400">Carreiras</Link></li>
-            <li><Link href="#" className="hover:text-yellow-400">Blog</Link></li>
-            <li><Link href="#contato" className="hover:text-yellow-400">Contato</Link></li>
-          </ul>
-        </div>
-
-        <div className="space-y-2">
-          <h3 className="text-sm font-bold">Legal</h3>
-          <ul className="space-y-1 text-sm text-white/70">
-            <li><Link href="#" className="hover:text-yellow-400">Termos de Serviço</Link></li>
-            <li><Link href="#" className="hover:text-yellow-400">Política de Privacidade</Link></li>
-            <li><Link href="#" className="hover:text-yellow-400">Cookies</Link></li>
-          </ul>
-        </div>
-      </div>
-
-      <div className="mt-8 flex  flex-col md:flex-row items-center justify-between text-sm text-white/60 border-t border-white/10 pt-6">
-        <p className="ml-10">© {new Date().getFullYear()} EduGestão. Todos os direitos reservados.</p>
-        <div className="flex gap-4 mt-4 md:mt-0">
-          {['facebook', 'instagram', 'twitter', 'linkedin'].map((network, idx) => (
-            <Link key={idx} href="#" className="hover:text-yellow-400">
-              <span className="sr-only">{network}</span>
-              <i className={`ri-${network}-line text-xl`}></i>
+    <footer className="bg-[#081628] border-t border-white/10 pt-16 pb-8">
+      <div className="container">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-16">
+          {/* Company Info */}
+          <div className="space-y-6">
+            <Link href="/" className="inline-block">
+              <div className="flex items-center gap-2">
+                <div className="bg-yellow-400 text-[#0b1c35] h-8 w-8 rounded-md flex items-center justify-center font-bold text-xl">
+                  K
+                </div>
+                <span className="text-white text-xl font-bold">Klyra</span>
+              </div>
             </Link>
-          ))}
+            <p className="text-white/70">
+              Simplificando a gestão escolar com tecnologia inovadora para instituições de ensino de todos os tamanhos.
+            </p>
+            <div className="flex gap-4">
+              <Link
+                href="#"
+                className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+              >
+                <Facebook className="h-5 w-5" />
+              </Link>
+              <Link
+                href="#"
+                className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+              >
+                <Instagram className="h-5 w-5" />
+              </Link>
+              <Link
+                href="#"
+                className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+              >
+                <Twitter className="h-5 w-5" />
+              </Link>
+              <Link
+                href="#"
+                className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+              >
+                <Linkedin className="h-5 w-5" />
+              </Link>
+            </div>
+          </div>
+
+          {/* Quick Links */}
+          <div>
+            <h3 className="text-white font-semibold text-lg mb-6">Links Rápidos</h3>
+            <ul className="space-y-4">
+              {[
+                { name: "Recursos", href: "#recursos" },
+                { name: "Preços", href: "#precos" },
+                { name: "Depoimentos", href: "#depoimentos" },
+                { name: "FAQ", href: "#faq" },
+                { name: "Blog", href: "#" },
+              ].map((link) => (
+                <li key={link.name}>
+                  <Link href={link.href} className="text-white/70 hover:text-yellow-400 transition-colors">
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Solutions */}
+          <div>
+            <h3 className="text-white font-semibold text-lg mb-6">Soluções</h3>
+            <ul className="space-y-4">
+              {[
+                { name: "Gestão Acadêmica", href: "#" },
+                { name: "Gestão Administrativa", href: "#" },
+                { name: "Gestão Financeira", href: "#" },
+                { name: "Comunicação", href: "#" },
+                { name: "Portal do Aluno", href: "#" },
+              ].map((link) => (
+                <li key={link.name}>
+                  <Link href={link.href} className="text-white/70 hover:text-yellow-400 transition-colors">
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Contact */}
+          <div>
+            <h3 className="text-white font-semibold text-lg mb-6">Contato</h3>
+            <ul className="space-y-4">
+              <li>
+                <Link
+                  href="mailto:contato@klyra.com.br"
+                  className="text-white/70 hover:text-yellow-400 transition-colors flex items-center gap-2"
+                >
+                  <Mail className="h-5 w-5 text-yellow-400" />
+                  contato@klyra.com.br
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="tel:+551140028922"
+                  className="text-white/70 hover:text-yellow-400 transition-colors flex items-center gap-2"
+                >
+                  <Phone className="h-5 w-5 text-yellow-400" />
+                  (11) 4002-8922
+                </Link>
+              </li>
+              <li className="flex items-start gap-2">
+                <MapPin className="h-5 w-5 text-yellow-400 mt-1 flex-shrink-0" />
+                <span className="text-white/70">
+                  Av. Paulista, 1000, Bela Vista
+                  <br />
+                  São Paulo - SP, 01310-100
+                </span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-white/60 text-sm">
+            &copy; {new Date().getFullYear()} Klyra Tecnologia Educacional. Todos os direitos reservados.
+          </p>
+          <div className="flex gap-6">
+            <Link href="#" className="text-white/60 hover:text-white text-sm">
+              Termos de Uso
+            </Link>
+            <Link href="#" className="text-white/60 hover:text-white text-sm">
+              Política de Privacidade
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

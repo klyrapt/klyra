@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-	darkMode: 'class',
+	darkMode: ['class', 'class'],
     content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -12,28 +12,47 @@ const config: Config = {
   		backgroundImage: {
   			'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
   			'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))'
-	
   		},
-		
-
-		  keyframes: {
-			draw: {
-			  "0%": { strokeDasharray: "0, 50", strokeDashoffset: "0" },
-			  "100%": { strokeDasharray: "50, 0", strokeDashoffset: "0" },
-			},
-		  },
-
-		  animation: {
-			draw: "draw 0.6s ease forwards",
-		  },
-
-		  container: {
-			center: true,
-			padding: "2rem",
-			screens: {
-			  "2xl": "1400px",
-			}
-			},
+  		keyframes: {
+  			draw: {
+  				'0%': {
+  					strokeDasharray: '0, 50',
+  					strokeDashoffset: '0'
+  				},
+  				'100%': {
+  					strokeDasharray: '50, 0',
+  					strokeDashoffset: '0'
+  				}
+  			},
+  			'accordion-down': {
+  				from: {
+  					height: '0'
+  				},
+  				to: {
+  					height: 'var(--radix-accordion-content-height)'
+  				}
+  			},
+  			'accordion-up': {
+  				from: {
+  					height: 'var(--radix-accordion-content-height)'
+  				},
+  				to: {
+  					height: '0'
+  				}
+  			}
+  		},
+  		animation: {
+  			draw: 'draw 0.6s ease forwards',
+  			'accordion-down': 'accordion-down 0.2s ease-out',
+  			'accordion-up': 'accordion-up 0.2s ease-out'
+  		},
+  		container: {
+  			center: true,
+  			padding: '2rem',
+  			screens: {
+  				'2xl': '1400px'
+  			}
+  		},
   		colors: {
   			lamaSky: '#C3EBFA',
   			lamaSkyLight: '#EDF9FD',

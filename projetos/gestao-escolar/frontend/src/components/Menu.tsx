@@ -12,7 +12,7 @@ const menuItems = [
     title: "MENU",
     items: [
       { icon: "/home.png", label: "Home", href: "/", visible: ["admin", "teacher", "student", "parent"] },
-      { icon: "/teacher.png", label: "Professores", href: "/list/teachers", visible: ["admin", "teacher"] },
+      { icon: "/teacher.png", label: "Professores", href: "/list/professores", visible: ["admin", "teacher"] },
       { icon: "/student.png", label: "Alunos", href: "/list/students", visible: ["admin", "teacher"] },
       { icon: "/parent.png", label: "Pais", href: "/list/parents", visible: ["admin", "teacher"] },
       { icon: "/subject.png", label: "Disciplinas", href: "/list/subjects", visible: ["admin"] },
@@ -25,8 +25,11 @@ const menuItems = [
       { icon: "/calendar.png", label: "Eventos", href: "/list/events", visible: ["admin", "teacher", "student", "parent"] },
       { icon: "/message.png", label: "Mensagens", href: "/list/messages", visible: ["admin", "teacher", "student", "parent"] },
       { icon: "/announcement.png", label: "Avisos", href: "/list/announcements", visible: ["admin", "teacher", "student", "parent"] },
+      { icon: "/coins.png", label: "Preços", href: "/list/prices", visible: ["admin"] }, // ← Aqui
+      { icon: "/lesson.png", label: "Matricula", href: "/list/matriculas", visible: ["admin"] }, // ← Aqui
     ],
   },
+  
   
   {
     title: "OUTROS",

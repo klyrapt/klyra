@@ -13,57 +13,46 @@ import Announcements from "@/components/Announcements";
 const SingleTeacherPage = () => {
   const { id } = useParams();
   const [professor, setProfessor] = useState<any>(null);
-  const [ensinos, setEnsinos] = useState<any[]>([]);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchProfessor = async () => {
       const token = localStorage.getItem("accessToken");
       try {
-        const [profRes, ensinoRes] = await Promise.all([
-          axios.get(`${BASE_URL}/api/professores/${id}/`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axios.get(`${BASE_URL}/api/ensinos/`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-        ]);
-
-        const dadosEnsino = ensinoRes.data.filter((e: any) => e.professor === Number(id));
-
-        setProfessor(profRes.data);
-        setEnsinos(dadosEnsino);
+        const res = await axios.get(`${BASE_URL}/api/professores/${id}/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setProfessor(res.data);
       } catch (err) {
         console.error("Erro ao buscar dados do professor:", err);
       }
     };
 
-    fetchData();
+    fetchProfessor();
   }, [id]);
 
-  const disciplinasUnicas = Array.from(new Set(ensinos.map((e: any) => e.disciplina_nome)));
-  const turmasUnicas = Array.from(new Set(ensinos.map((e: any) => e.turma_nome)));
+  const disciplinasUnicas = professor?.disciplinas_atribuidas || [];
+  const turmasUnicas = professor?.turmas_atribuidas || [];
 
   return (
     <div className="flex-1 p-4 flex flex-col gap-4 xl:flex-row">
-      {/* LEFT */}
+      {/* ESQUERDA */}
       <div className="w-full xl:w-2/3">
         {/* TOPO */}
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="bg-lamaSky p-6 rounded-md flex flex-col sm:flex-row items-center gap-4 w-full lg:w-2/3">
-          <Image
+            <Image
               src={
                 professor?.foto
                   ? professor.foto.startsWith("http")
                     ? professor.foto
                     : `${BASE_URL}${professor.foto.startsWith("/") ? "" : "/"}${professor.foto}`
-                  : "/placeholder.png" // imagem padrão se não houver foto
+                  : "/placeholder.png"
               }
               alt="Foto do professor"
               width={120}
               height={120}
               className="rounded-full w-32 h-32 object-cover"
             />
-
             <div className="flex-1 text-center sm:text-left">
               <h1 className="text-2xl font-semibold">{professor?.nome}</h1>
               <p className="text-gray-600 text-sm">{professor?.biografia}</p>

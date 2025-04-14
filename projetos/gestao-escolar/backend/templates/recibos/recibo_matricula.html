@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprovativo de Matrícula</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-light: #dbeafe;
+            --secondary: #475569;
+            --accent: #f59e0b;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --success: #10b981;
+            --border: #e2e8f0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f1f5f9;
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .header {
+            background-color: var(--primary);
+            color: white;
+            padding: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-info h1 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .header-info p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin: 2px 0;
+        }
+        
+        .logo-container {
+            background-color: white;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .logo {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+        }
+        
+        .title-section {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 1px solid var(--border);
+            margin: 0 30px;
+        }
+        
+        .title-section h2 {
+            font-size: 24px;
+            color: var(--primary);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .title-section p {
+            font-size: 16px;
+            color: var(--secondary);
+            margin-top: 10px;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 25px;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--primary-light);
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title::before {
+            content: "";
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .info-item {
+            margin-bottom: 10px;
+        }
+        
+        .info-label {
+            font-size: 13px;
+            color: var(--secondary);
+            margin-bottom: 4px;
+        }
+        
+        .info-value {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+        
+        .payment-box {
+            background-color: var(--primary-light);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .payment-amount {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .payment-label {
+            font-size: 14px;
+            color: var(--secondary);
+        }
+        
+        .payment-status {
+            background-color: var(--success);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .observations {
+            background-color: #fef9c3;
+            border-left: 4px solid var(--accent);
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 10px;
+        }
+        
+        .signatures {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            padding-top: 20px;
+        }
+        
+        .signature {
+            width: 45%;
+            text-align: center;
+        }
+        
+        .signature-line {
+            border-top: 1px solid var(--dark);
+            margin-bottom: 10px;
+        }
+        
+        .signature-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .signature-title {
+            font-size: 12px;
+            color: var(--secondary);
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background-color: var(--light);
+            border-top: 1px solid var(--border);
+            font-size: 13px;
+            color: var(--secondary);
+        }
+        
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            font-size: 100px;
+            font-weight: 800;
+            color: rgba(0, 0, 0, 0.03);
+            pointer-events: none;
+            white-space: nowrap;
+            z-index: 1;
+        }
+        
+        .verification-code {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        
+        .code {
+            font-family: monospace;
+            background-color: var(--light);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 20px;
+                border-radius: 8px;
+            }
+            
+            .header {
+                flex-direction: column;
+                text-align: center;
+                gap: 20px;
+            }
+            
+            .signatures {
+                flex-direction: column;
+                gap: 30px;
+            }
+            
+            .signature {
+                width: 100%;
+            }
+            
+            .payment-box {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+        }
+    </style>
+    
+</head>
+<body>
+    <div class="container">
+        <div class="watermark">VERIFICADO</div>
+        
+        <header class="header">
+            <div class="header-info">
+                <h1>Instituto de Ensino </h1>
+                <p>Av. da Educação, 1250 - Lisboa</p>
+                <p>contato@instituto.edu.pt | (351) 210-555-789</p>
+            </div>
+            <div class="logo-container">
+                <img src="/placeholder.svg?height=70&width=70" alt="Logo" class="logo">
+            </div>
+        </header>
+        
+        <div class="title-section">
+            <h2>Comprovativo de Matrícula</h2>
+            <p>Nº 2024/12345 • Ano Letivo 2024/2025</p>
+        </div>
+        
+        <div class="content">
+            <section class="section">
+                <h3 class="section-title">Dados do Aluno</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Nome Completo</div>
+                        <div class="info-value">Ana Sofia Martins Costa</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Número de Aluno</div>
+                        <div class="info-value">A-54321</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Documento de Identificação</div>
+                        <div class="info-value">15678932 4 ZZ8</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Data de Nascimento</div>
+                        <div class="info-value">12/05/2006</div>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="section">
+                <h3 class="section-title">Dados da Matrícula</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Curso</div>
+                        <div class="info-value">Ciências e Tecnologias</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Turma</div>
+                        <div class="info-value">12º CT3</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Nível</div>
+                        <div class="info-value">12ª Classe</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Data da Matrícula</div>
+                        <div class="info-value">15/04/2024</div>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="section">
+                <h3 class="section-title">Pagamento</h3>
+                <div class="payment-box">
+                    <div>
+                        <div class="payment-label">Valor Pago</div>
+                        <div class="payment-amount">€ 550,00</div>
+                    </div>
+                    <div class="payment-status">CONFIRMADO</div>
+                </div>
+                <div class="info-item" style="margin-top: 15px;">
+                    <div class="info-label">Descrição</div>
+                    <div class="info-value">Matrícula e propinas iniciais referentes ao ano letivo 2025</div>
+                </div>
+            </section>
+            
+            <section class="section">
+                <h3 class="section-title">Encarregado de Educação</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Nome</div>
+                        <div class="info-value">Carlos Alberto Costa</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Contacto</div>
+                        <div class="info-value">(351) 912-345-678</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Email</div>
+                        <div class="info-value">carlos.costa@email.com</div>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="section">
+                <h3 class="section-title">Observações</h3>
+                <div class="observations">
+                    <p>Este documento comprova a matrícula do(a) aluno(a) no Instituto de Educação Superior para o ano letivo 2024/2025. A matrícula está confirmada e regularizada.</p>
+                </div>
+            </section>
+            
+            <div class="signatures">
+                <div class="signature">
+                    <div class="signature-line"></div>
+                    <div class="signature-name">Carlos Alberto Costa</div>
+                    <div class="signature-title">Encarregado de Educação</div>
+                </div>
+                <div class="signature">
+                    <div class="signature-line"></div>
+                    <div class="signature-name">Dra. Maria Silva</div>
+                    <div class="signature-title">Secretaria Académica</div>
+                </div>
+            </div>
+            
+            <div class="verification-code">
+                <p>Código de Verificação: <span class="code">IES-2024-12345-XYZW</span></p>
+            </div>
+        </div>
+        
+        <footer class="footer">
+            <p>Documento emitido eletronicamente em 15/04/2024 às 14:32</p>
+            <p>Instituto de Ensino • Sistema de Gestão Académica</p>
+        </footer>
+    </div>
+</body>
+</html>

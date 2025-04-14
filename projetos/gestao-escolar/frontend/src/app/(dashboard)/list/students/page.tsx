@@ -13,6 +13,8 @@ import { withAuth } from "@/lib/withAuth";
 import { BASE_URL } from "@/lib/constants";
 import { role } from "@/lib/data";
 
+import { ArrowDownAZ, ArrowUpAZ } from "lucide-react";
+
 type Aluno = {
   id: number;
   numero_aluno: string;
@@ -37,17 +39,40 @@ const StudentListPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const fetchAlunos = async (page = 1, search = "") => {
     try {
+      setLoading(true);
       const token = localStorage.getItem("accessToken");
-      const res = await axios.get("http://localhost:8000/api/alunos/", {
-        headers: { Authorization: `Bearer ${token}` },
-        params: { page, search },
-      });
-      setAlunos(res.data.results);
-      setCount(res.data.count);
+  
+      const params: any = { page };
+      if (search.trim()) {
+        params.search = search.trim();
+      }
+  
+      const [alunoRes] = await Promise.all([
+        axios.get(`${BASE_URL}/api/alunos/`, {
+          headers: { Authorization: `Bearer ${token}` },
+          params,
+        }),
+      ]);
+  
+      const alunosData = Array.isArray(alunoRes.data)
+        ? alunoRes.data
+        : alunoRes.data.results || [];
+  
+      const alunosComNumero = alunosData; // Já vem do backend!
+  
+      alunosComNumero.sort((a: Aluno, b: Aluno) =>
+        sortOrder === "asc"
+          ? a.nome_completo.localeCompare(b.nome_completo)
+          : b.nome_completo.localeCompare(a.nome_completo)
+      );
+  
+      setAlunos(alunosComNumero);
+      setCount(alunoRes.data.count || alunosComNumero.length);
       setCurrentPage(page);
     } catch (err) {
       console.error("Erro ao buscar alunos:", err);
@@ -55,6 +80,7 @@ const StudentListPage = () => {
       setLoading(false);
     }
   };
+  
 
   useEffect(() => {
     fetchAlunos();
@@ -97,9 +123,6 @@ const StudentListPage = () => {
         </div>
       </td>
 
-
-
-
       <td className="hidden md:table-cell">{item.numero_aluno}</td>
       <td className="hidden md:table-cell">{item.telefone || "-"}</td>
       <td className="hidden lg:table-cell">{item.endereco_completo || "-"}</td>
@@ -135,9 +158,20 @@ const StudentListPage = () => {
             <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
               <Image src="/filter.png" alt="Filtro" width={14} height={14} />
             </button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
-              <Image src="/sort.png" alt="Ordenar" width={14} height={14} />
+            <button
+              onClick={() => {
+                setSortOrder(prev => (prev === "asc" ? "desc" : "asc"));
+                fetchAlunos(currentPage, searchTerm);
+              }}
+              className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow"
+            >
+              {sortOrder === "asc" ? (
+                <ArrowDownAZ className="w-4 h-4 text-black" />
+              ) : (
+                <ArrowUpAZ className="w-4 h-4 text-black" />
+              )}
             </button>
+
             {role === "admin" && (
               <FormModal table="student" type="create" onSuccess={() => fetchAlunos(currentPage, searchTerm)} />
             )}
